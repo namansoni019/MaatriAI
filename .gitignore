@@ -39,3 +39,10 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Python venv
+ml/venv/
+ml/ml/models/*.joblib
+
+# Large datasets
+ICBHI_final_database/
