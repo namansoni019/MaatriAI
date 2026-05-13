@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -94,7 +94,14 @@ const MotherNavigator = () => (
     <MotherStack.Screen 
       name="AddMother" 
       component={AddMotherScreen} 
-      options={{ title: 'Add Mother / माँ जोड़ें' }} 
+      options={({ navigation }) => ({ 
+        title: 'Add Mother / माँ जोड़ें',
+        headerLeft: () => (
+          <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginLeft: 12 }}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+        ),
+      })} 
     />
     <MotherStack.Screen 
       name="StartVisit" 
@@ -138,7 +145,6 @@ const MotherNavigator = () => (
     />
   </MotherStack.Navigator>
 );
-
 const MainNavigator = () => (
   <Tab.Navigator
     screenOptions={({ route }) => ({

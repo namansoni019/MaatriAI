@@ -134,14 +134,21 @@ const MotherProfileScreen: React.FC = () => {
           style={[styles.btn, styles.startVisitBtn]}
           onPress={() => navigation.navigate('StartVisit', { motherId: mother.id })}
         >
-          <Text style={styles.btnTextWhite}>🏠 Start Visit</Text>
+          <Text style={styles.btnTextWhite}>🏠 Visit</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
           style={[styles.btn, styles.newbornBtn]}
-          onPress={() => navigation.navigate('NewbornProfile', { newbornId: 'dummy' })}
+          onPress={() => navigation.navigate('BreathScan', { newbornId: mother.id })}
         >
-          <Text style={styles.btnTextPink}>👶 Newborn</Text>
+          <Text style={styles.btnTextPink}>🫁 Breath</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.btn, styles.newbornBtn]}
+          onPress={() => navigation.navigate('VisionScan', { newbornId: mother.id })}
+        >
+          <Text style={styles.btnTextPink}>📷 Scan</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

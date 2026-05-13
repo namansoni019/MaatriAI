@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator } from 'react-native';
-import { useNavigation, useIsFocused } from '@react-navigation/native';
+import { useNavigation, useIsFocused, CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { db } from '../../database/db';
@@ -16,6 +16,8 @@ const HomeScreen: React.FC = () => {
   const [totalMothers, setTotalMothers] = useState(0);
   const [highRiskMothers, setHighRiskMothers] = useState(0);
   const [totalVisits, setTotalVisits] = useState(0);
+  const [breathScans, setBreathScans] = useState(0);
+  const [abnormalScans, setAbnormalScans] = useState(0);
   const [pendingSync, setPendingSync] = useState(0);
 
   const loadDashboardData = async () => {
@@ -35,11 +37,18 @@ const HomeScreen: React.FC = () => {
         const unsyncedM: any = await db.getFirstAsync('SELECT COUNT(*) as count FROM mothers WHERE is_synced = 0');
         const unsyncedV: any = await db.getFirstAsync('SELECT COUNT(*) as count FROM visits WHERE is_synced = 0');
         const unsyncedN: any = await db.getFirstAsync('SELECT COUNT(*) as count FROM newborns WHERE is_synced = 0');
+        const unsyncedB: any = await db.getFirstAsync('SELECT COUNT(*) as count FROM breath_scans WHERE is_synced = 0');
         
+        // Breath scan stats
+        const breathCount: any = await db.getFirstAsync('SELECT COUNT(*) as count FROM breath_scans');
+        const abnormalCount: any = await db.getFirstAsync("SELECT COUNT(*) as count FROM breath_scans WHERE status = 'ABNORMAL'");
+
         setTotalMothers(motherCount?.count || 0);
         setHighRiskMothers(highRiskCount?.count || 0);
         setTotalVisits(visitCount?.count || 0);
-        setPendingSync((unsyncedM?.count || 0) + (unsyncedV?.count || 0) + (unsyncedN?.count || 0));
+        setBreathScans(breathCount?.count || 0);
+        setAbnormalScans(abnormalCount?.count || 0);
+        setPendingSync((unsyncedM?.count || 0) + (unsyncedV?.count || 0) + (unsyncedN?.count || 0) + (unsyncedB?.count || 0));
       }
     } catch (e) {
       console.error('Error loading dashboard stats', e);
@@ -102,6 +111,8 @@ const HomeScreen: React.FC = () => {
           {renderStatCard('Total Mothers', totalMothers, 'people', '#2196F3')}
           {renderStatCard('High Risk (RED)', highRiskMothers, 'warning', '#F44336', true)}
           {renderStatCard('Total Visits', totalVisits, 'home', '#4CAF50')}
+          {renderStatCard('Breath Scans', breathScans, 'fitness', '#9C27B0')}
+          {renderStatCard('Abnormal Scans', abnormalScans, 'alert-circle', abnormalScans > 0 ? '#E65100' : '#9E9E9E', abnormalScans > 0)}
           {renderStatCard('Pending Sync', pendingSync, 'cloud-upload', pendingSync > 0 ? '#FF9800' : '#9E9E9E')}
         </View>
 
@@ -110,7 +121,10 @@ const HomeScreen: React.FC = () => {
         
         <TouchableOpacity 
           style={styles.actionBtn}
-          onPress={() => navigation.navigate('Mothers', { screen: 'AddMother' })}
+          onPress={() => {
+            navigation.navigate('Mothers', { screen: 'MotherList' });
+            setTimeout(() => navigation.navigate('Mothers', { screen: 'AddMother' }), 100);
+          }}
         >
           <View style={[styles.actionIcon, { backgroundColor: '#C2185B' }]}>
             <Ionicons name="person-add" size={24} color="#fff" />
@@ -124,7 +138,7 @@ const HomeScreen: React.FC = () => {
 
         <TouchableOpacity 
           style={styles.actionBtn}
-          onPress={() => navigation.navigate('Mothers')}
+          onPress={() => navigation.navigate('Mothers', { screen: 'MotherList' })}
         >
           <View style={[styles.actionIcon, { backgroundColor: '#4CAF50' }]}>
             <Ionicons name="list" size={24} color="#fff" />
