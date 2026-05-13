@@ -46,3 +46,10 @@ ml/ml/models/*.joblib
 
 # Large datasets
 ICBHI_final_database/
+NJN/
+
+# Model artifacts (large binary files)
+ml/ml/models/*.joblib
+ml/ml/models/*.h5
+ml/ml/models/*.tflite
+ml/ml/models/*.onnx

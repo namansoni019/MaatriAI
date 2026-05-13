@@ -81,6 +81,20 @@ export const initDatabase = async (): Promise<void> => {
         is_synced INTEGER DEFAULT 0,
         created_at TEXT
       );
+      CREATE TABLE IF NOT EXISTS breath_scans (
+        id TEXT PRIMARY KEY,
+        mother_id TEXT NOT NULL,
+        asha_id TEXT NOT NULL,
+        scan_date TEXT,
+        status TEXT DEFAULT 'NORMAL',
+        confidence REAL DEFAULT 0,
+        probability_normal REAL DEFAULT 0,
+        probability_abnormal REAL DEFAULT 0,
+        analysis_note TEXT,
+        audio_uri TEXT,
+        is_synced INTEGER DEFAULT 0,
+        created_at TEXT
+      );
     `);
     console.log('Database initialized successfully');
   } catch (error) {
