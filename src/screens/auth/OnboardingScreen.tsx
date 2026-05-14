@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView, Platform, SafeAreaView, ScrollView
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db } from '../../database/db';
 import { AuthContext } from '../../context/AuthContext';
@@ -22,6 +23,7 @@ const OnboardingScreen: React.FC = () => {
   const [step, setStep] = useState(1);
   const navigation = useNavigation<any>();
   const { signIn } = React.useContext(AuthContext);
+  const { t } = useTranslation();
 
   // Step 1 State
   const [fullName, setFullName] = useState('');
@@ -43,23 +45,23 @@ const OnboardingScreen: React.FC = () => {
     setErrorMsg('');
     if (step === 1) {
       if (!fullName.trim() || phone.length !== 10) {
-        setErrorMsg('Please enter a valid name and 10-digit phone number');
+        setErrorMsg(t('onboarding.errNamePhone'));
         return;
       }
       setStep(2);
     } else if (step === 2) {
       if (!village.trim() || !district.trim() || !stateName.trim()) {
-        setErrorMsg('Please fill in all location details');
+        setErrorMsg(t('onboarding.errLocation'));
         return;
       }
       setStep(3);
     } else if (step === 3) {
       if (pin.length !== 4) {
-        setErrorMsg('PIN must be 4 digits');
+        setErrorMsg(t('login.invalidPinError'));
         return;
       }
       if (pin !== confirmPin) {
-        setErrorMsg('PINs do not match');
+        setErrorMsg(t('onboarding.errPinMatch'));
         return;
       }
       
@@ -88,7 +90,7 @@ const OnboardingScreen: React.FC = () => {
         signIn();
       } catch (err) {
         console.error(err);
-        setErrorMsg('Error creating account');
+        setErrorMsg(t('onboarding.errCreateAccount'));
       }
     }
   };
@@ -121,27 +123,27 @@ const OnboardingScreen: React.FC = () => {
           
           {step === 1 && (
             <View>
-              <Text style={styles.title}>Personal Details / व्यक्तिगत जानकारी</Text>
+              <Text style={styles.title}>{t('onboarding.personalDetails')}</Text>
               
-              <Text style={styles.label}>Full Name</Text>
+              <Text style={styles.label}>{t('onboarding.fullName')}</Text>
               <TextInput 
                 style={styles.input} 
-                placeholder="Enter your full name"
+                placeholder={t('onboarding.fullNamePlaceholder')}
                 value={fullName}
                 onChangeText={setFullName}
               />
               
-              <Text style={styles.label}>Phone Number</Text>
+              <Text style={styles.label}>{t('onboarding.phone')}</Text>
               <TextInput 
                 style={styles.input} 
-                placeholder="10-digit mobile number"
+                placeholder={t('onboarding.phonePlaceholder')}
                 keyboardType="numeric"
                 maxLength={10}
                 value={phone}
                 onChangeText={setPhone}
               />
 
-              <Text style={styles.label}>Preferred Language</Text>
+              <Text style={styles.label}>{t('onboarding.language')}</Text>
               <View style={styles.languageContainer}>
                 {LANGUAGES.map(lang => (
                   <TouchableOpacity 
@@ -160,28 +162,28 @@ const OnboardingScreen: React.FC = () => {
 
           {step === 2 && (
             <View>
-              <Text style={styles.title}>Your Location / आपका स्थान</Text>
+              <Text style={styles.title}>{t('onboarding.location')}</Text>
               
-              <Text style={styles.label}>Village / Town Name</Text>
+              <Text style={styles.label}>{t('onboarding.village')}</Text>
               <TextInput 
                 style={styles.input} 
-                placeholder="e.g. Rampur"
+                placeholder={t('onboarding.villagePlaceholder')}
                 value={village}
                 onChangeText={setVillage}
               />
               
-              <Text style={styles.label}>District</Text>
+              <Text style={styles.label}>{t('onboarding.district')}</Text>
               <TextInput 
                 style={styles.input} 
-                placeholder="e.g. Pune"
+                placeholder={t('onboarding.districtPlaceholder')}
                 value={district}
                 onChangeText={setDistrict}
               />
 
-              <Text style={styles.label}>State</Text>
+              <Text style={styles.label}>{t('onboarding.state')}</Text>
               <TextInput 
                 style={styles.input} 
-                placeholder="e.g. Maharashtra"
+                placeholder={t('onboarding.statePlaceholder')}
                 value={stateName}
                 onChangeText={setStateName}
               />
@@ -190,12 +192,12 @@ const OnboardingScreen: React.FC = () => {
 
           {step === 3 && (
             <View>
-              <Text style={styles.title}>Create PIN / PIN बनाएं</Text>
+              <Text style={styles.title}>{t('onboarding.createPin')}</Text>
               
-              <Text style={styles.label}>4-digit PIN</Text>
+              <Text style={styles.label}>{t('onboarding.pin')}</Text>
               <TextInput 
                 style={styles.input} 
-                placeholder="Enter 4-digit PIN"
+                placeholder={t('onboarding.pinPlaceholder')}
                 secureTextEntry
                 keyboardType="numeric"
                 maxLength={4}
@@ -203,10 +205,10 @@ const OnboardingScreen: React.FC = () => {
                 onChangeText={setPin}
               />
               
-              <Text style={styles.label}>Confirm PIN</Text>
+              <Text style={styles.label}>{t('onboarding.confirmPin')}</Text>
               <TextInput 
                 style={styles.input} 
-                placeholder="Re-enter PIN"
+                placeholder={t('onboarding.confirmPinPlaceholder')}
                 secureTextEntry
                 keyboardType="numeric"
                 maxLength={4}
@@ -222,11 +224,11 @@ const OnboardingScreen: React.FC = () => {
 
         <View style={styles.footer}>
           <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
-            <Text style={styles.backBtnText}>Back</Text>
+            <Text style={styles.backBtnText}>{t('common.back')}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.nextBtn} onPress={handleNext}>
-            <Text style={styles.nextBtnText}>{step === 3 ? 'Save & Start / शुरू करें' : 'Next / आगे'}</Text>
+            <Text style={styles.nextBtnText}>{step === 3 ? t('onboarding.start') : t('common.next')}</Text>
           </TouchableOpacity>
         </View>
 

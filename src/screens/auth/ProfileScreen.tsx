@@ -35,12 +35,12 @@ const ProfileScreen: React.FC = () => {
 
   const handleLogout = () => {
     Alert.alert(
-      "Log Out",
-      "Are you sure you want to log out? (क्या आप लॉग आउट करना चाहते हैं?)",
+      t('profile.logoutAlertTitle'),
+      t('profile.logoutAlertMsg'),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t('common.cancel'), style: "cancel" },
         { 
-          text: "Log Out", 
+          text: t('profile.logout'), 
           style: "destructive",
           onPress: async () => {
             await AsyncStorage.removeItem('maatri_session');
@@ -63,7 +63,7 @@ const ProfileScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Profile / प्रोफाइल</Text>
+        <Text style={styles.headerTitle}>{t('profile.title')}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -71,34 +71,34 @@ const ProfileScreen: React.FC = () => {
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{worker?.name?.charAt(0) || 'A'}</Text>
           </View>
-          <Text style={styles.name}>{worker?.name || 'ASHA Worker'}</Text>
-          <Text style={styles.id}>ID: {worker?.id || '---'}</Text>
+          <Text style={styles.name}>{worker?.name || t('profile.defaultName')}</Text>
+          <Text style={styles.id}>{t('profile.id')}: {worker?.id || '---'}</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Details / विवरण</Text>
+          <Text style={styles.sectionTitle}>{t('profile.details')}</Text>
           
           <View style={styles.row}>
             <Ionicons name="call" size={20} color="#757575" />
-            <Text style={styles.rowText}>{worker?.phone || 'No phone'}</Text>
+            <Text style={styles.rowText}>{worker?.phone || t('profile.noPhone')}</Text>
           </View>
           
           <View style={styles.row}>
             <Ionicons name="location" size={20} color="#757575" />
             <Text style={styles.rowText}>
               {worker?.village ? `${worker.village}, ` : ''}
-              {worker?.district ? `${worker.district}` : 'Location unknown'}
+              {worker?.district ? `${worker.district}` : t('profile.unknownLocation')}
             </Text>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Settings / सेटिंग्स</Text>
+          <Text style={styles.sectionTitle}>{t('profile.settings')}</Text>
           
           <TouchableOpacity style={styles.settingRow} onPress={toggleLanguage}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Ionicons name="language" size={20} color="#757575" />
-              <Text style={styles.rowText}>Language / भाषा</Text>
+              <Text style={styles.rowText}>{t('profile.language')}</Text>
             </View>
             <View style={styles.badge}>
               <Text style={styles.badgeText}>
@@ -110,7 +110,7 @@ const ProfileScreen: React.FC = () => {
 
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={20} color="#D32F2F" />
-          <Text style={styles.logoutText}>Log Out / लॉग आउट</Text>
+          <Text style={styles.logoutText}>{t('profile.logout')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, SafeAreaVi
 import { Ionicons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
 import { db } from '../../database/db';
+import { useTranslation } from 'react-i18next';
 
 const SyncScreen: React.FC = () => {
+  const { t } = useTranslation();
   const isFocused = useIsFocused();
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -54,10 +56,10 @@ const SyncScreen: React.FC = () => {
         await db.runAsync('UPDATE visits SET is_synced = 1 WHERE is_synced = 0');
         await db.runAsync('UPDATE newborns SET is_synced = 1 WHERE is_synced = 0');
         
-        Alert.alert('Sync Successful', 'All data has been securely backed up to the cloud.');
+        Alert.alert(t('syncScreen.successMsg'), '');
         checkUnsynced();
       } catch (e) {
-        Alert.alert('Sync Failed', 'Please check your internet connection and try again.');
+        Alert.alert(t('syncScreen.failMsg'), '');
       } finally {
         setSyncing(false);
       }
@@ -69,7 +71,7 @@ const SyncScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Data Sync / डेटा सिंक</Text>
+        <Text style={styles.headerTitle}>{t('syncScreen.title')}</Text>
       </View>
 
       <View style={styles.content}>
@@ -80,11 +82,11 @@ const SyncScreen: React.FC = () => {
             color={totalUnsynced === 0 ? "#4CAF50" : "#FF9800"} 
           />
           <Text style={styles.statusTitle}>
-            {totalUnsynced === 0 ? 'All Data Synced!' : `${totalUnsynced} Pending Items`}
+            {totalUnsynced === 0 ? t('syncScreen.status') : `${totalUnsynced} Pending Items`}
           </Text>
           <Text style={styles.statusSub}>
             {totalUnsynced === 0 
-              ? 'Your data is safely backed up on the cloud.' 
+              ? t('syncScreen.noPending') 
               : 'Please connect to the internet and sync your data to keep it safe.'}
           </Text>
         </View>
@@ -93,14 +95,14 @@ const SyncScreen: React.FC = () => {
           <Text style={styles.detailsHeader}>Unsynced Records</Text>
           
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>🤰 Mothers / माताएं</Text>
+            <Text style={styles.rowLabel}>🤰 {t('syncScreen.unsyncedMothers')}</Text>
             <View style={[styles.badge, unsyncedMothers === 0 && styles.badgeZero]}>
               <Text style={[styles.badgeText, unsyncedMothers === 0 && styles.badgeTextZero]}>{unsyncedMothers}</Text>
             </View>
           </View>
           
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>🏠 Home Visits / घर की यात्राएं</Text>
+            <Text style={styles.rowLabel}>🏠 {t('syncScreen.unsyncedVisits')}</Text>
             <View style={[styles.badge, unsyncedVisits === 0 && styles.badgeZero]}>
               <Text style={[styles.badgeText, unsyncedVisits === 0 && styles.badgeTextZero]}>{unsyncedVisits}</Text>
             </View>
@@ -124,7 +126,7 @@ const SyncScreen: React.FC = () => {
           ) : (
             <>
               <Ionicons name="cloud-upload" size={24} color={totalUnsynced === 0 ? "#9E9E9E" : "#fff"} style={{ marginRight: 8 }} />
-              <Text style={[styles.syncBtnText, totalUnsynced === 0 && { color: '#9E9E9E' }]}>Sync Now / अभी सिंक करें</Text>
+              <Text style={[styles.syncBtnText, totalUnsynced === 0 && { color: '#9E9E9E' }]}>{t('syncScreen.syncNow')}</Text>
             </>
           )}
         </TouchableOpacity>

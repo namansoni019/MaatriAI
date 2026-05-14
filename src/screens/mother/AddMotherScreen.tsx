@@ -7,8 +7,10 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { addMother } from '../../database/motherRepository';
+import { useTranslation } from 'react-i18next';
 
 const AddMotherScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
 
   // Section 1: Personal Info
@@ -59,18 +61,18 @@ const AddMotherScreen: React.FC = () => {
   const validate = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!name.trim()) newErrors.name = 'Full Name is required';
+    if (!name.trim()) newErrors.name = t('addMother.errRequired');
     
     const ageNum = parseInt(age);
     if (!age || isNaN(ageNum) || ageNum < 15 || ageNum > 50) {
-      newErrors.age = 'Age must be between 15 and 50';
+      newErrors.age = t('addMother.errAge');
     }
 
-    if (!village.trim()) newErrors.village = 'Village is required';
+    if (!village.trim()) newErrors.village = t('addMother.errRequired');
 
     const weeksNum = parseInt(weeksPregnant);
     if (!weeksPregnant || isNaN(weeksNum) || weeksNum < 1 || weeksNum > 42) {
-      newErrors.weeksPregnant = 'Weeks pregnant must be between 1 and 42';
+      newErrors.weeksPregnant = t('addMother.errWeeks');
     }
 
     setErrors(newErrors);
@@ -186,25 +188,25 @@ const AddMotherScreen: React.FC = () => {
           </View>
 
           {/* Section 1 */}
-          <Text style={styles.sectionHeader}>Personal Info / व्यक्तिगत जानकारी</Text>
-          {renderInput('Full Name*', name, setName, 'name', { error: errors.name })}
-          {renderInput('Age* (15-50)', age, setAge, 'age', { keyboardType: 'numeric', error: errors.age })}
-          {renderInput('Phone Number', phone, setPhone, 'phone', { keyboardType: 'numeric', maxLength: 10 })}
-          {renderInput('Village*', village, setVillage, 'village', { error: errors.village })}
-          {renderInput('District', district, setDistrict, 'district')}
-          {renderInput('State', stateName, setStateName, 'stateName')}
+          <Text style={styles.sectionHeader}>{t('addMother.basicDetails')}</Text>
+          {renderInput(t('addMother.fullName'), name, setName, 'name', { error: errors.name, placeholder: t('addMother.namePlaceholder') })}
+          {renderInput(t('addMother.age'), age, setAge, 'age', { keyboardType: 'numeric', error: errors.age, placeholder: t('addMother.agePlaceholder') })}
+          {renderInput(t('addMother.phone'), phone, setPhone, 'phone', { keyboardType: 'numeric', maxLength: 10 })}
+          {renderInput(t('addMother.village'), village, setVillage, 'village', { error: errors.village })}
+          {renderInput(t('addMother.district'), district, setDistrict, 'district')}
+          {renderInput(t('addMother.state'), stateName, setStateName, 'stateName')}
 
           {/* Section 2 */}
-          <Text style={styles.sectionHeader}>Pregnancy Details / गर्भावस्था</Text>
-          {renderInput('Weeks Pregnant* (1-42)', weeksPregnant, setWeeksPregnant, 'weeksPregnant', { keyboardType: 'numeric', error: errors.weeksPregnant })}
-          {renderInput('Previous pregnancies / Parity', parity, setParity, 'parity', { keyboardType: 'numeric' })}
-          {renderInput('ABHA ID', abhaId, setAbhaId, 'abhaId', { placeholder: 'Leave blank if unknown' })}
+          <Text style={styles.sectionHeader}>{t('addMother.pregnancyDetails')}</Text>
+          {renderInput(t('addMother.weeksPregnant'), weeksPregnant, setWeeksPregnant, 'weeksPregnant', { keyboardType: 'numeric', error: errors.weeksPregnant, placeholder: t('addMother.weeksPlaceholder') })}
+          {renderInput(t('addMother.parity'), parity, setParity, 'parity', { keyboardType: 'numeric', placeholder: t('addMother.parityPlaceholder') })}
+          {renderInput('ABHA ID', abhaId, setAbhaId, 'abhaId', { placeholder: t('common.optional') })}
 
           {/* Section 3 */}
-          <Text style={styles.sectionHeader}>Health Measurements / स्वास्थ्य माप</Text>
+          <Text style={styles.sectionHeader}>{t('addMother.vitals')}</Text>
           
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Hemoglobin (g/dL)</Text>
+            <Text style={styles.label}>{t('addMother.hb')}</Text>
             <TextInput
               style={[styles.input, isFocused === 'hemoglobin' && styles.inputFocused]}
               value={hemoglobin}
@@ -218,24 +220,24 @@ const AddMotherScreen: React.FC = () => {
 
           <View style={styles.row}>
             <View style={{ flex: 1, marginRight: 8 }}>
-              {renderInput('Systolic BP (mmHg)', systolicBP, setSystolicBP, 'systolicBP', { keyboardType: 'numeric' })}
+              {renderInput(t('addMother.sysBp'), systolicBP, setSystolicBP, 'systolicBP', { keyboardType: 'numeric' })}
             </View>
             <View style={{ flex: 1, marginLeft: 8 }}>
-              {renderInput('Diastolic BP (mmHg)', diastolicBP, setDiastolicBP, 'diastolicBP', { keyboardType: 'numeric' })}
+              {renderInput(t('addMother.diaBp'), diastolicBP, setDiastolicBP, 'diastolicBP', { keyboardType: 'numeric' })}
             </View>
           </View>
           {parseFloat(systolicBP) > 140 && (
             <Text style={[styles.hintText, { color: '#D32F2F', marginTop: -10, marginBottom: 16 }]}>⚠️ High BP detected</Text>
           )}
 
-          {renderInput('Blood Sugar (mg/dL)', bloodSugar, setBloodSugar, 'bloodSugar', { keyboardType: 'decimal-pad' })}
+          {renderInput(t('addMother.sugar'), bloodSugar, setBloodSugar, 'bloodSugar', { keyboardType: 'decimal-pad' })}
 
           <View style={styles.row}>
             <View style={{ flex: 1, marginRight: 8 }}>
-              {renderInput('Height (cm)', height, setHeight, 'height', { keyboardType: 'decimal-pad' })}
+              {renderInput(t('addMother.height'), height, setHeight, 'height', { keyboardType: 'decimal-pad' })}
             </View>
             <View style={{ flex: 1, marginLeft: 8 }}>
-              {renderInput('Weight (kg)', weight, setWeight, 'weight', { keyboardType: 'decimal-pad' })}
+              {renderInput(t('addMother.weight'), weight, setWeight, 'weight', { keyboardType: 'decimal-pad' })}
             </View>
           </View>
 
@@ -256,7 +258,7 @@ const AddMotherScreen: React.FC = () => {
             {isLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.saveBtnText}>Save Mother / माँ सहेजें</Text>
+              <Text style={styles.saveBtnText}>{t('addMother.saveBtn')}</Text>
             )}
           </TouchableOpacity>
 
@@ -265,7 +267,7 @@ const AddMotherScreen: React.FC = () => {
         {/* Success Toast */}
         {showSuccessToast && (
           <View style={styles.toast}>
-            <Text style={styles.toastText}>✓ Mother record saved!</Text>
+            <Text style={styles.toastText}>✓ {t('addMother.successMsg')}</Text>
           </View>
         )}
 
