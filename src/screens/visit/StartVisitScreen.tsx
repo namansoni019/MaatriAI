@@ -12,21 +12,20 @@ import { evaluateVisit } from '../../ai/dangerSignRules';
 import { speak, stopListening } from '../../services/voiceService';
 import VoiceButton from '../../components/VoiceButton';
 import { Mother } from '../../types';
+import { useTranslation } from 'react-i18next';
 
 type StartVisitRouteProp = RouteProp<MotherStackParamList, 'StartVisit'>;
 
-const VISIT_QUESTIONS = [
+const getVisitQuestions = (t: any) => [
   {
     id: 'general_health',
-    questionHindi: 'आज माँ कैसा महसूस कर रही हैं? कोई तकलीफ?',
-    questionEnglish: 'How is the mother feeling today? Any complaints?',
+    questionText: t('startVisit.q_general'),
     inputType: 'voice_text',
     field: 'generalComplaint',
   },
   {
     id: 'systolic_bp',
-    questionHindi: 'आज का ब्लड प्रेशर? पहला नंबर (ऊपर वाला)?',
-    questionEnglish: 'Blood pressure today? First number (Systolic)?',
+    questionText: t('startVisit.q_sys'),
     inputType: 'numeric',
     field: 'systolicBP',
     unit: 'mmHg',
@@ -36,8 +35,7 @@ const VISIT_QUESTIONS = [
   },
   {
     id: 'diastolic_bp',
-    questionHindi: 'दूसरा नंबर (नीचे वाला)?',
-    questionEnglish: 'Second number (Diastolic)?',
+    questionText: t('startVisit.q_dia'),
     inputType: 'numeric',
     field: 'diastolicBP',
     unit: 'mmHg',
@@ -47,43 +45,40 @@ const VISIT_QUESTIONS = [
   },
   {
     id: 'headache',
-    questionHindi: 'क्या सिरदर्द है या आँखों के सामने अंधेरा आता है?',
-    questionEnglish: 'Any headache or blurred vision?',
+    questionText: t('startVisit.q_headache'),
     inputType: 'yes_no',
     field: 'hasHeadache',
   },
   {
     id: 'swelling',
-    questionHindi: 'हाथ, चेहरे, या पैरों में सूजन है?',
-    questionEnglish: 'Any swelling in hands, face, or feet?',
+    questionText: t('startVisit.q_swelling'),
     inputType: 'yes_no',
     field: 'hasSwelling',
   },
   {
     id: 'fetal_movement',
-    questionHindi: 'बच्चा पेट में सामान्य रूप से हिल रहा है?',
-    questionEnglish: 'Is baby moving normally in the womb?',
+    questionText: t('startVisit.q_fetal'),
     inputType: 'yes_no',
     field: 'fetalMovementNormal',
     showIfWeeksAbove: 20,
   },
   {
     id: 'bleeding',
-    questionHindi: 'कोई रक्तस्राव या असामान्य स्राव है?',
-    questionEnglish: 'Any bleeding or abnormal discharge?',
+    questionText: t('startVisit.q_bleeding'),
     inputType: 'yes_no',
     field: 'hasBleeding',
   },
   {
     id: 'iron_tablets',
-    questionHindi: 'आज आयरन और फोलिक एसिड की गोली खाई?',
-    questionEnglish: 'Did she take iron and folic acid tablet today?',
+    questionText: t('startVisit.q_iron'),
     inputType: 'yes_no',
     field: 'ironFolicCompliance',
   },
 ];
 
 const StartVisitScreen: React.FC = () => {
+  const { t } = useTranslation();
+  const VISIT_QUESTIONS = getVisitQuestions(t);
   const route = useRoute<StartVisitRouteProp>();
   const navigation = useNavigation<any>();
   const isFocused = useIsFocused();
@@ -257,24 +252,23 @@ const StartVisitScreen: React.FC = () => {
           <View style={styles.progressBg}>
             <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
           </View>
-          <Text style={styles.progressText}>Question {currentQVisibleIndex} of {totalQuestions}</Text>
+          <Text style={styles.progressText}>{t('startVisit.progress', { current: currentQVisibleIndex, total: totalQuestions })}</Text>
         </View>
 
         <View style={styles.content}>
           <View style={styles.card}>
             <Text style={styles.qNumber}>Q{currentQVisibleIndex}</Text>
-            <Text style={styles.qHindi}>{q.questionHindi}</Text>
-            <Text style={styles.qEnglish}>{q.questionEnglish}</Text>
+            <Text style={styles.qHindi}>{q.questionText}</Text>
 
             <View style={styles.inputArea}>
               
               {q.inputType === 'yes_no' && (
                 <View style={styles.yesNoContainer}>
                   <TouchableOpacity style={[styles.ynBtn, styles.yesBtn]} onPress={() => handleYesNo(true)}>
-                    <Text style={styles.yesNoText}>✓ हाँ (Yes)</Text>
+                    <Text style={styles.yesNoText}>✓ {t('common.yes')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={[styles.ynBtn, styles.noBtn]} onPress={() => handleYesNo(false)}>
-                    <Text style={styles.yesNoText}>✗ नहीं (No)</Text>
+                    <Text style={styles.yesNoText}>✗ {t('common.no')}</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -287,7 +281,7 @@ const StartVisitScreen: React.FC = () => {
                       keyboardType="numeric"
                       value={currentInputValue}
                       onChangeText={setCurrentInputValue}
-                      placeholder="0"
+                      placeholder={t('startVisit.numberHint')}
                       maxLength={3}
                     />
                     <View style={styles.voiceSmallWrapper}>
@@ -301,7 +295,7 @@ const StartVisitScreen: React.FC = () => {
                     </View>
                   </View>
                   {q.unit && <Text style={styles.unitText}>{q.unit}</Text>}
-                  {q.normalRange && <Text style={styles.hintText}>Normal: {q.normalRange}</Text>}
+                  {q.normalRange && <Text style={styles.hintText}>{t('startVisit.normalRange')} {q.normalRange}</Text>}
                 </View>
               )}
 
@@ -315,7 +309,7 @@ const StartVisitScreen: React.FC = () => {
                     style={styles.textInput}
                     value={currentInputValue}
                     onChangeText={setCurrentInputValue}
-                    placeholder="Speak or type answer..."
+                    placeholder={t('startVisit.typeHint')}
                     multiline
                   />
                 </View>
@@ -327,7 +321,7 @@ const StartVisitScreen: React.FC = () => {
 
         <View style={styles.footer}>
           <TouchableOpacity style={styles.backBtn} onPress={handleBack} disabled={saving}>
-            <Text style={styles.backBtnText}>← Back</Text>
+            <Text style={styles.backBtnText}>← {t('common.back')}</Text>
           </TouchableOpacity>
           
           {q.inputType !== 'yes_no' && (
@@ -336,7 +330,7 @@ const StartVisitScreen: React.FC = () => {
               onPress={handleNextClick}
               disabled={isNextDisabled || saving}
             >
-              {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.nextBtnText}>Next → आगे</Text>}
+              {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.nextBtnText}>{t('common.next')} →</Text>}
             </TouchableOpacity>
           )}
         </View>

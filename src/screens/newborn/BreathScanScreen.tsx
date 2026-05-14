@@ -10,10 +10,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { speak } from '../../services/voiceService';
 import { analyseBreath, BreathResult } from '../../ai/breathAnalyser';
 import { saveBreathScan } from '../../database/breathScanRepository';
+import { useTranslation } from 'react-i18next';
 
 type ScanState = 'instructions' | 'ready' | 'recording' | 'analysing' | 'result';
 
 const BreathScanScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const newbornId = route.params?.newbornId;
@@ -44,7 +46,7 @@ const BreathScanScreen: React.FC = () => {
   // Speak alert on abnormal result
   useEffect(() => {
     if (state === 'result' && result?.status === 'ABNORMAL') {
-      speak('ध्यान दें! बच्चे की सांस में समस्या है। नज़दीकी PHC जाएं।');
+      speak(t('breathScan.audioAlert'));
     }
   }, [state, result]);
 
@@ -182,28 +184,25 @@ const BreathScanScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.instructionsScroll}>
           <Text style={styles.babyIcon}>🍼</Text>
-          <Text style={styles.title}>Breath Check / सांस जांच</Text>
+          <Text style={styles.title}>{t('breathScan.title')}</Text>
 
           <View style={styles.instructionCard}>
             <Text style={styles.instructionEmoji}>📱</Text>
-            <Text style={styles.instructionText}>Hold phone 20cm from baby's face</Text>
-            <Text style={styles.instructionHindi}>फ़ोन बच्चे के मुँह से 20cm दूर रखें</Text>
+            <Text style={styles.instructionText}>{t('breathScan.instr1')}</Text>
           </View>
 
           <View style={styles.instructionCard}>
             <Text style={styles.instructionEmoji}>🤫</Text>
-            <Text style={styles.instructionText}>Make sure room is quiet</Text>
-            <Text style={styles.instructionHindi}>कमरे में शांति रखें</Text>
+            <Text style={styles.instructionText}>{t('breathScan.instr2')}</Text>
           </View>
 
           <View style={styles.instructionCard}>
             <Text style={styles.instructionEmoji}>⏱️</Text>
-            <Text style={styles.instructionText}>Recording will take 30 seconds</Text>
-            <Text style={styles.instructionHindi}>30 सेकंड की रिकॉर्डिंग होगी</Text>
+            <Text style={styles.instructionText}>{t('breathScan.instr3')}</Text>
           </View>
 
           <TouchableOpacity style={styles.readyBtn} onPress={() => setState('ready')}>
-            <Text style={styles.readyBtnText}>I'm Ready / तैयार हूँ</Text>
+            <Text style={styles.readyBtnText}>{t('breathScan.readyBtn')}</Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
@@ -218,8 +217,7 @@ const BreathScanScreen: React.FC = () => {
           <TouchableOpacity style={styles.micButton} onPress={startRecording}>
             <Ionicons name="mic" size={48} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.tapText}>Tap to Start Recording</Text>
-          <Text style={styles.tapTextHindi}>रिकॉर्डिंग शुरू करने के लिए दबाएं</Text>
+          <Text style={styles.tapText}>{t('breathScan.tapStart')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -245,10 +243,10 @@ const BreathScanScreen: React.FC = () => {
             ))}
           </View>
 
-          <Text style={styles.recordingText}>Recording... / रिकॉर्ड हो रहा है...</Text>
+          <Text style={styles.recordingText}>{t('breathScan.recording')}</Text>
 
           <TouchableOpacity style={styles.stopBtn} onPress={stopRecording}>
-            <Text style={styles.stopBtnText}>Stop Early / जल्दी बंद करें</Text>
+            <Text style={styles.stopBtnText}>{t('breathScan.stopEarly')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -261,9 +259,8 @@ const BreathScanScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <View style={styles.analysingContainer}>
           <ActivityIndicator size="large" color="#C2185B" />
-          <Text style={styles.analysingText}>Analysing breath sounds...</Text>
-          <Text style={styles.analysingHindi}>सांस की जांच हो रही है...</Text>
-          <Text style={styles.analysingNote}>This takes about 3 seconds{"\n"}इसमें 3 सेकंड लगेंगे</Text>
+          <Text style={styles.analysingText}>{t('breathScan.analysing')}</Text>
+          <Text style={styles.analysingNote}>{t('breathScan.analysingNote')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -285,16 +282,13 @@ const BreathScanScreen: React.FC = () => {
           </View>
 
           <Text style={[styles.resultTitle, { color: isNormal ? '#2E7D32' : '#C62828' }]}>
-            {isNormal ? 'Breathing Normal' : 'Breathing Concern'}
-          </Text>
-          <Text style={[styles.resultTitleHindi, { color: isNormal ? '#2E7D32' : '#C62828' }]}>
-            {isNormal ? 'सांस सामान्य है' : 'सांस में समस्या'}
+            {isNormal ? t('breathScan.resultNormal') : t('breathScan.resultAbnormal')}
           </Text>
 
           <Text style={styles.resultDesc}>
             {isNormal
-              ? "Baby's breathing pattern sounds healthy.\nबच्चे की सांस ठीक लग रही है।"
-              : "Abnormal breathing detected. Take baby to PHC.\nअसामान्य सांस मिली। PHC जाएं।"
+              ? t('breathScan.descNormal')
+              : t('breathScan.descAbnormal')
             }
           </Text>
 
@@ -305,19 +299,19 @@ const BreathScanScreen: React.FC = () => {
           {isNormal ? (
             <>
               <TouchableOpacity style={styles.saveBtn} onPress={saveResult}>
-                <Text style={styles.saveBtnText}>✓ Save Result</Text>
+                <Text style={styles.saveBtnText}>{t('breathScan.saveResult')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.retryBtn} onPress={() => { setResult(null); setState('ready'); }}>
-                <Text style={styles.retryBtnText}>Record Again</Text>
+                <Text style={styles.retryBtnText}>{t('breathScan.recordAgain')}</Text>
               </TouchableOpacity>
             </>
           ) : (
             <>
               <TouchableOpacity style={styles.phcBtn}>
-                <Text style={styles.phcBtnText}>🏥 Go to PHC</Text>
+                <Text style={styles.phcBtnText}>{t('breathScan.goPhc')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.retryBtn} onPress={() => { setResult(null); setState('ready'); }}>
-                <Text style={styles.retryBtnText}>Record Again</Text>
+                <Text style={styles.retryBtnText}>{t('breathScan.recordAgain')}</Text>
               </TouchableOpacity>
             </>
           )}

@@ -4,8 +4,10 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { updateMother, getMotherById } from '../../database/motherRepository';
 import { calculateRisk, getDetailedRiskFactors, RiskOutput } from '../../ai/riskScorer';
+import { useTranslation } from 'react-i18next';
 
 const RiskScoreScreen: React.FC = () => {
+  const { t } = useTranslation();
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
   
@@ -100,14 +102,12 @@ const RiskScoreScreen: React.FC = () => {
   const bgColor = result.riskTier === 'RED' ? '#F44336' : (result.riskTier === 'AMBER' ? '#FF9800' : '#4CAF50');
   const lightBgColor = result.riskTier === 'RED' ? '#FFEBEE' : (result.riskTier === 'AMBER' ? '#FFF3E0' : '#E8F5E9');
   
-  let riskLabelEn = 'Low Risk';
-  let riskLabelHi = 'कम जोखिम';
+  let riskLabelEn = t('riskScore.lowRisk');
+  let riskLabelHi = '';
   if (result.riskTier === 'AMBER') {
-    riskLabelEn = 'Medium Risk';
-    riskLabelHi = 'मध्यम जोखिम';
+    riskLabelEn = t('riskScore.moderateRisk');
   } else if (result.riskTier === 'RED') {
-    riskLabelEn = 'High Risk';
-    riskLabelHi = 'उच्च जोखिम';
+    riskLabelEn = t('riskScore.highRisk');
   }
 
   const handleSave = async () => {
@@ -143,14 +143,13 @@ const RiskScoreScreen: React.FC = () => {
           <Text style={styles.scoreMax}>/100</Text>
         </View>
         <Text style={styles.riskLabelEn}>{riskLabelEn}</Text>
-        <Text style={styles.riskLabelHi}>{riskLabelHi}</Text>
         <View style={styles.aiBadge}>
-          <Text style={styles.aiNote}>🤖 AI Powered Risk Assessment</Text>
+          <Text style={styles.aiNote}>🤖 AI Powered {t('riskScore.title')}</Text>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.sectionTitle}>Risk Factors / जोखिम कारण</Text>
+        <Text style={styles.sectionTitle}>{t('riskScore.keyFactors')}</Text>
         <View style={styles.factorsCard}>
           {factors.map((f, i) => (
             <View style={styles.factorRow} key={i}>
@@ -167,7 +166,7 @@ const RiskScoreScreen: React.FC = () => {
           {factors.length === 0 && <Text style={{color: '#9E9E9E'}}>No data available</Text>}
         </View>
 
-        <Text style={styles.sectionTitle}>AI Recommendation / सलाह</Text>
+        <Text style={styles.sectionTitle}>{t('riskScore.actions')}</Text>
         <View style={[styles.recommendationCard, { backgroundColor: lightBgColor }]}>
           {result.riskTier === 'GREEN' && (
             <Text style={styles.recommendationText}>✅ Excellent! Continue regular ANC visits.{"\n"}अगली यात्रा 4 सप्ताह में।</Text>
@@ -192,7 +191,7 @@ const RiskScoreScreen: React.FC = () => {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-          <Text style={styles.saveBtnText}>Save & Close / सहेजें</Text>
+          <Text style={styles.saveBtnText}>{t('riskScore.completeBtn')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

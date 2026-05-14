@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as DocumentPicker from 'expo-document-picker';
 import { analyseNewbornImage, VisionResult } from '../../ai/visionAnalyser';
+import { useTranslation } from 'react-i18next';
 
 type ScanState = 'instructions' | 'camera' | 'preview' | 'analysing' | 'results';
 
@@ -17,6 +18,7 @@ const FRAME_W = SCREEN_W * 0.8;
 const FRAME_H = SCREEN_H * 0.45;
 
 const VisionScanScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const newbornId = route.params?.newbornId;
@@ -129,7 +131,7 @@ const VisionScanScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.instrScroll}>
-          <Text style={styles.title}>Newborn Scan / नवजात जांच</Text>
+          <Text style={styles.title}>{t('visionScan.title')}</Text>
 
           <ScrollView
             horizontal
@@ -138,29 +140,26 @@ const VisionScanScreen: React.FC = () => {
           >
             <View style={styles.instrCard}>
               <Text style={styles.instrEmoji}>📷</Text>
-              <Text style={styles.instrText}>Place baby on a flat, well-lit surface</Text>
-              <Text style={styles.instrHindi}>बच्चे को समतल और रोशनी वाली जगह लिटाएं</Text>
+              <Text style={styles.instrText}>{t('visionScan.instr1')}</Text>
             </View>
             <View style={styles.instrCard}>
               <Text style={styles.instrEmoji}>📏</Text>
-              <Text style={styles.instrText}>Hold phone 40-50cm above baby</Text>
-              <Text style={styles.instrHindi}>फ़ोन बच्चे से 40-50cm ऊपर रखें</Text>
+              <Text style={styles.instrText}>{t('visionScan.instr2')}</Text>
             </View>
             <View style={styles.instrCard}>
               <Text style={styles.instrEmoji}>🔆</Text>
-              <Text style={styles.instrText}>Ensure good lighting, avoid shadows</Text>
-              <Text style={styles.instrHindi}>अच्छी रोशनी रखें, परछाईं न हो</Text>
+              <Text style={styles.instrText}>{t('visionScan.instr3')}</Text>
             </View>
           </ScrollView>
 
           <TouchableOpacity style={styles.openCamBtn} onPress={openCamera}>
             <Ionicons name="camera" size={22} color="#fff" style={{ marginRight: 8 }} />
-            <Text style={styles.openCamBtnText}>Open Camera / कैमरा खोलें</Text>
+            <Text style={styles.openCamBtnText}>{t('visionScan.openCam')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.pickBtn} onPress={pickFromGallery}>
             <Ionicons name="images" size={22} color="#C2185B" style={{ marginRight: 8 }} />
-            <Text style={styles.pickBtnText}>Pick from Gallery / गैलरी से चुनें</Text>
+            <Text style={styles.pickBtnText}>{t('visionScan.pickGallery')}</Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
@@ -183,15 +182,14 @@ const VisionScanScreen: React.FC = () => {
         {/* Frame overlay */}
         <View style={styles.overlay}>
           <View style={styles.frameBorder}>
-            <Text style={styles.frameText}>Baby should fit here</Text>
-            <Text style={styles.frameTextHindi}>बच्चा यहाँ होना चाहिए</Text>
+            <Text style={styles.frameText}>{t('visionScan.frameText')}</Text>
           </View>
         </View>
 
         {/* Bottom controls */}
         <View style={styles.camControls}>
           <TouchableOpacity onPress={() => setState('instructions')}>
-            <Text style={styles.cancelText}>Cancel</Text>
+            <Text style={styles.cancelText}>{t('common.cancel')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.captureBtn} onPress={takePhoto}>
@@ -215,10 +213,10 @@ const VisionScanScreen: React.FC = () => {
         <Image source={{ uri: photoUri }} style={styles.previewImage} resizeMode="cover" />
         <View style={styles.previewButtons}>
           <TouchableOpacity style={styles.useBtn} onPress={startAnalysis}>
-            <Text style={styles.useBtnText}>✓ Use this photo / यह फ़ोटो सही है</Text>
+            <Text style={styles.useBtnText}>{t('visionScan.usePhoto')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.retakeBtn} onPress={() => setState('camera')}>
-            <Text style={styles.retakeBtnText}>✗ Retake / फिर से</Text>
+            <Text style={styles.retakeBtnText}>{t('visionScan.retake')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -235,11 +233,11 @@ const VisionScanScreen: React.FC = () => {
           {photoUri && (
             <Image source={{ uri: photoUri }} style={styles.thumbImage} resizeMode="cover" />
           )}
-          <Text style={styles.analysingTitle}>Analysing... / जांच हो रही है...</Text>
+          <Text style={styles.analysingTitle}>{t('visionScan.analysing')}</Text>
           <View style={styles.stepsContainer}>
-            {renderStep('Checking skin colour for jaundice...', step1Done)}
-            {renderStep('Estimating baby size...', step2Done)}
-            {renderStep('Checking nutrition status...', step3Done)}
+            {renderStep(t('visionScan.step1'), step1Done)}
+            {renderStep(t('visionScan.step2'), step2Done)}
+            {renderStep(t('visionScan.step3'), step3Done)}
           </View>
         </View>
       </SafeAreaView>
@@ -252,35 +250,35 @@ const VisionScanScreen: React.FC = () => {
   if (state === 'results' && result) {
     const jColor = result.jaundiceRisk === 'LOW' ? '#4CAF50' : result.jaundiceRisk === 'MEDIUM' ? '#FF9800' : '#F44336';
     const jBg = result.jaundiceRisk === 'LOW' ? '#E8F5E9' : result.jaundiceRisk === 'MEDIUM' ? '#FFF3E0' : '#FFEBEE';
-    const jLabel = result.jaundiceRisk === 'LOW' ? 'Low Risk / कम जोखिम'
-      : result.jaundiceRisk === 'MEDIUM' ? 'Monitor / ध्यान दें'
-      : 'Refer to PHC / PHC जाएं';
+    const jLabel = result.jaundiceRisk === 'LOW' ? t('visionScan.lowRisk')
+      : result.jaundiceRisk === 'MEDIUM' ? t('visionScan.monitor')
+      : t('visionScan.referPHC');
 
     const isLBW = result.estimatedWeightKg.max < 2.5;
     const wColor = isLBW ? '#F44336' : '#4CAF50';
-    const wLabel = isLBW ? 'Low Birth Weight / कम वजन ⚠️' : 'Normal Weight / सामान्य वजन';
+    const wLabel = isLBW ? t('visionScan.lbw') : t('visionScan.normalWeight');
 
     const nColor = result.nutritionStatus === 'NORMAL' ? '#4CAF50' : result.nutritionStatus === 'MAM' ? '#FF9800' : '#F44336';
-    const nLabel = result.nutritionStatus === 'NORMAL' ? 'Healthy / स्वस्थ'
-      : result.nutritionStatus === 'MAM' ? 'Moderate - give supplementary nutrition'
-      : 'Severe - refer to NRC immediately';
+    const nLabel = result.nutritionStatus === 'NORMAL' ? t('visionScan.healthy')
+      : result.nutritionStatus === 'MAM' ? t('visionScan.mam')
+      : t('visionScan.sam');
 
     return (
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.resultScroll}>
-          <Text style={styles.resultTitle}>Scan Results / जांच के नतीजे</Text>
+          <Text style={styles.resultTitle}>{t('visionScan.resultsTitle')}</Text>
 
           {/* Card 1: Jaundice */}
           <View style={styles.resultCard}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardEmoji}>🟡</Text>
-              <Text style={styles.cardTitle}>Jaundice Check / पीलिया जांच</Text>
+              <Text style={styles.cardTitle}>{t('visionScan.jaundiceTitle')}</Text>
             </View>
             <View style={[styles.badge, { backgroundColor: jBg }]}>
               <Text style={[styles.badgeText, { color: jColor }]}>{jLabel}</Text>
             </View>
             {result.jaundiceRisk === 'HIGH' && (
-              <Text style={styles.alertNote}>Take baby for bilirubin test at PHC{"\n"}बच्चे का बिलीरुबिन टेस्ट PHC पर कराएं</Text>
+              <Text style={styles.alertNote}>{t('visionScan.jaundiceAlert')}</Text>
             )}
           </View>
 
@@ -288,7 +286,7 @@ const VisionScanScreen: React.FC = () => {
           <View style={styles.resultCard}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardEmoji}>⚖️</Text>
-              <Text style={styles.cardTitle}>Weight Estimate / अनुमानित वजन</Text>
+              <Text style={styles.cardTitle}>{t('visionScan.weightTitle')}</Text>
             </View>
             <Text style={styles.weightRange}>
               {result.estimatedWeightKg.min.toFixed(1)} – {result.estimatedWeightKg.max.toFixed(1)} kg
@@ -296,14 +294,14 @@ const VisionScanScreen: React.FC = () => {
             <View style={[styles.badge, { backgroundColor: isLBW ? '#FFEBEE' : '#E8F5E9' }]}>
               <Text style={[styles.badgeText, { color: wColor }]}>{wLabel}</Text>
             </View>
-            <Text style={styles.noteText}>Confirm with weighing scale / तराजू से पक्का करें</Text>
+            <Text style={styles.noteText}>{t('visionScan.weightNote')}</Text>
           </View>
 
           {/* Card 3: Nutrition */}
           <View style={styles.resultCard}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardEmoji}>📊</Text>
-              <Text style={styles.cardTitle}>Nutrition / पोषण</Text>
+              <Text style={styles.cardTitle}>{t('visionScan.nutritionTitle')}</Text>
             </View>
             <View style={[styles.badge, { backgroundColor: result.nutritionStatus === 'NORMAL' ? '#E8F5E9' : result.nutritionStatus === 'MAM' ? '#FFF3E0' : '#FFEBEE' }]}>
               <Text style={[styles.badgeText, { color: nColor }]}>{nLabel}</Text>
@@ -311,14 +309,14 @@ const VisionScanScreen: React.FC = () => {
           </View>
 
           {/* Confidence */}
-          <Text style={styles.confText}>Confidence: {Math.round(result.confidence * 100)}%</Text>
+          <Text style={styles.confText}>{t('visionScan.confidence')} {Math.round(result.confidence * 100)}%</Text>
 
           {/* Buttons */}
           <TouchableOpacity style={styles.saveBtn} onPress={saveResults}>
-            <Text style={styles.saveBtnText}>Save Results / सहेजें</Text>
+            <Text style={styles.saveBtnText}>{t('visionScan.saveResults')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.scanAgainBtn} onPress={() => { setResult(null); setPhotoUri(null); setState('instructions'); }}>
-            <Text style={styles.scanAgainBtnText}>Scan Again / फिर जांचें</Text>
+            <Text style={styles.scanAgainBtnText}>{t('visionScan.scanAgain')}</Text>
           </TouchableOpacity>
 
           <Text style={styles.disclaimerText}>{result.analysisNote}</Text>

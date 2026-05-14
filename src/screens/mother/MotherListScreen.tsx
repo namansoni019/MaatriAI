@@ -9,8 +9,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAllMothers, searchMothers } from '../../database/motherRepository';
 import { Mother } from '../../types';
 import RiskBadge from '../../components/RiskBadge';
+import { useTranslation } from 'react-i18next';
 
 const MotherListScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const isFocused = useIsFocused();
   const [mothers, setMothers] = useState<Mother[]>([]);
@@ -85,16 +87,16 @@ const MotherListScreen: React.FC = () => {
           </View>
           
           <Text style={styles.cardRow2}>
-            📍 {item.village || 'Unknown'}   🤰 {item.weeksPregnant} weeks
+            📍 {item.village || t('motherList.unknownLocation')}   🤰 {item.weeksPregnant} {t('motherList.weeks')}
           </Text>
           
           <Text style={styles.cardRow3}>
-            Last visit: {item.lastVisitDate ? new Date(item.lastVisitDate).toLocaleDateString() : 'Not visited yet'}
+            {t('motherList.lastVisit')} {item.lastVisitDate ? new Date(item.lastVisitDate).toLocaleDateString() : t('motherList.notVisitedYet')}
           </Text>
           
           {daysSince !== null && (
             <Text style={[styles.cardRow4, { color: daysColor }]}>
-              Days since visit: {daysSince} days
+              {t('motherList.daysSinceVisit', { days: daysSince })}
             </Text>
           )}
 
@@ -102,7 +104,7 @@ const MotherListScreen: React.FC = () => {
             style={styles.startVisitContainer}
             onPress={() => navigation.navigate('StartVisit', { motherId: item.id })}
           >
-            <Text style={styles.startVisitText}>Start Visit →</Text>
+            <Text style={styles.startVisitText}>{t('motherList.startVisitBtn')}</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -114,13 +116,13 @@ const MotherListScreen: React.FC = () => {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyEmoji}>🤰</Text>
-        <Text style={styles.emptyTitle}>No mothers added yet</Text>
-        <Text style={styles.emptySub}>अभी तक कोई माँ नहीं जोड़ी</Text>
+        <Text style={styles.emptyTitle}>{t('motherList.noMothersTitle')}</Text>
+        <Text style={styles.emptySub}>{t('motherList.noMothersSub')}</Text>
         <TouchableOpacity 
           style={styles.addFirstBtn}
           onPress={() => navigation.navigate('AddMother')}
         >
-          <Text style={styles.addFirstBtnText}>Add First Mother</Text>
+          <Text style={styles.addFirstBtnText}>{t('motherList.addFirstBtn')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -133,18 +135,18 @@ const MotherListScreen: React.FC = () => {
           <Ionicons name="search" size={20} color="#9E9E9E" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search by name or village / नाम से खोजें"
+            placeholder={t('motherList.searchPlaceholder')}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
         </View>
         <View style={styles.row}>
-          <Text style={styles.totalText}>Total: {mothers.length} mothers</Text>
+          <Text style={styles.totalText}>{t('motherList.totalMothers', { count: mothers.length })}</Text>
           <TouchableOpacity 
             style={styles.addBtn}
             onPress={() => navigation.navigate('AddMother')}
           >
-            <Text style={styles.addBtnText}>+ Add Mother</Text>
+            <Text style={styles.addBtnText}>{t('motherList.addMother')}</Text>
           </TouchableOpacity>
         </View>
       </View>
