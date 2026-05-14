@@ -6,6 +6,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { initDatabase } from './src/database/db';
+import { loadSavedLanguage } from './src/services/languageService';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 // Auth Screens
 import LoginScreen from './src/screens/auth/LoginScreen';
@@ -13,6 +15,7 @@ import OnboardingScreen from './src/screens/auth/OnboardingScreen';
 
 // Dashboard
 import HomeScreen from './src/screens/dashboard/HomeScreen';
+import ProfileScreen from './src/screens/auth/ProfileScreen';
 
 // Mother Stack Screens
 import MotherListScreen from './src/screens/mother/MotherListScreen';
@@ -154,6 +157,7 @@ const MainNavigator = () => (
         if (route.name === 'Home') iconName = 'home';
         else if (route.name === 'Mothers') iconName = 'people';
         else if (route.name === 'Sync') iconName = 'cloud-upload';
+        else if (route.name === 'Profile') iconName = 'person-circle';
 
         return <Ionicons name={iconName} size={size} color={color} />;
       },
@@ -166,6 +170,7 @@ const MainNavigator = () => (
     <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
     <Tab.Screen name="Mothers" component={MotherNavigator} options={{ title: 'Mothers' }} />
     <Tab.Screen name="Sync" component={SyncScreen} options={{ title: 'Sync' }} />
+    <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
   </Tab.Navigator>
 );
 
@@ -186,14 +191,14 @@ export default function App() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        // Initialize SQLite Database
+        await loadSavedLanguage();
         await initDatabase();
-
-        // Check for active session
         const session = await AsyncStorage.getItem('maatri_session');
-        setHasSession(!!session);
+        if (session) {
+          setHasSession(true);
+        }
       } catch (error) {
-        console.error('Failed to initialize app:', error);
+        console.error(error);
       } finally {
         setIsLoading(false);
       }
@@ -211,10 +216,12 @@ export default function App() {
   }
 
   return (
-    <AuthContext.Provider value={authContext}>
-      <NavigationContainer>
-        {hasSession ? <MainNavigator /> : <AuthNavigator />}
-      </NavigationContainer>
-    </AuthContext.Provider>
+    <ErrorBoundary>
+      <AuthContext.Provider value={authContext}>
+        <NavigationContainer>
+          {hasSession ? <MainNavigator /> : <AuthNavigator />}
+        </NavigationContainer>
+      </AuthContext.Provider>
+    </ErrorBoundary>
   );
 }

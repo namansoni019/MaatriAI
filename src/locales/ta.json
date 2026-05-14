@@ -1,0 +1,71 @@
+{
+  "app": {
+    "name": "Maatri.AI",
+    "tagline": "Maternal & Neonatal Care",
+    "taglineEn": "Maternal & Neonatal Care AI"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "next": "Next",
+    "back": "Back",
+    "yes": "Yes",
+    "no": "No",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "offline": "Offline",
+    "syncing": "Syncing...",
+    "synced": "Synced",
+    "required": "Required",
+    "optional": "Optional"
+  },
+  "login": {
+    "title": "ASHA Worker Login",
+    "ashaIdLabel": "ASHA ID",
+    "ashaIdPlaceholder": "Enter your ASHA ID",
+    "pinLabel": "4-digit PIN",
+    "pinPlaceholder": "Enter 4-digit PIN",
+    "loginBtn": "Login",
+    "setupText": "First time? Setup account",
+    "emptyIdError": "ASHA ID cannot be empty",
+    "invalidPinError": "PIN must be 4 digits",
+    "loginError": "ASHA ID or PIN not found. Please register first."
+  },
+  "home": {
+    "goodMorning": "Good morning",
+    "goodAfternoon": "Good afternoon",
+    "goodEvening": "Good evening",
+    "totalMothers": "Total Mothers",
+    "highRisk": "High Risk",
+    "visitsToday": "Visits Today",
+    "breathScans": "Breath Scans",
+    "pendingSync": "Pending Sync",
+    "noMothersTitle": "No mothers added yet",
+    "noMothersSub": "Go to 'Mothers' tab to add mothers",
+    "addMotherBtn": "+ Add Mother",
+    "priorityVisits": "Today's Priority Visits",
+    "otherMothers": "Other Mothers",
+    "reminders": "Reminders",
+    "lastVisit": "Last:",
+    "noVisit": "No visit",
+    "daysAgo": "d ago",
+    "visitBtn": "Visit →",
+    "visitOverdue": "visit overdue",
+    "nearDelivery": "reaching 36 weeks soon"
+  },
+  "visit": {
+    "routineReason": "✓ Routine ANC check",
+    "highRiskReason": "⚠️ High risk monitoring required",
+    "nearDeliveryReason": "🕐 Near delivery — weekly check",
+    "overdueReason": "📅 Overdue visit"
+  },
+  "danger": {
+    "emergencyTitle": "🚨 EMERGENCY",
+    "callSupervisor": "📞 Call ANM Supervisor",
+    "goToHospital": "🏥 Go to PHC/FRU",
+    "viewRiskScore": "📊 View Full Risk Score",
+    "attentionTitle": "⚠️ Attention",
+    "monitorClosely": "Monitor closely. Visit again in 2 days."
+  }
+}

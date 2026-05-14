@@ -7,8 +7,10 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db } from '../../database/db';
 import { AuthContext } from '../../context/AuthContext';
+import { changeLanguage } from '../../services/languageService';
 
 const LANGUAGES = [
+  { id: 'en', name: 'English', native: 'English' },
   { id: 'hi', name: 'Hindi', native: 'हिंदी' },
   { id: 'mr', name: 'Marathi', native: 'मराठी' },
   { id: 'ta', name: 'Tamil', native: 'தமிழ்' },
@@ -82,6 +84,7 @@ const OnboardingScreen: React.FC = () => {
           preferredLanguage: language
         }));
 
+        await changeLanguage(language);
         signIn();
       } catch (err) {
         console.error(err);
