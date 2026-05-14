@@ -4,12 +4,15 @@ import {
   ActivityIndicator, KeyboardAvoidingView, Platform, SafeAreaView 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db } from '../../database/db';
 import { AuthContext } from '../../context/AuthContext';
+import { loadDemoData } from '../../utils/demoData';
 
 const LoginScreen: React.FC = () => {
   const { signIn } = React.useContext(AuthContext);
+  const { t } = useTranslation();
   const [ashaId, setAshaId] = useState('');
   const [pin, setPin] = useState('');
   const [isFocused, setIsFocused] = useState<'id' | 'pin' | null>(null);
@@ -21,11 +24,11 @@ const LoginScreen: React.FC = () => {
   const handleLogin = async () => {
     setErrorMsg('');
     if (!ashaId.trim()) {
-      setErrorMsg('ASHA ID cannot be empty');
+      setErrorMsg(t('login.emptyIdError'));
       return;
     }
     if (pin.length !== 4) {
-      setErrorMsg('PIN must be 4 digits');
+      setErrorMsg(t('login.invalidPinError'));
       return;
     }
 
@@ -62,11 +65,11 @@ const LoginScreen: React.FC = () => {
       } else {
         // Step 6 & 7: Not found error
         setIsLoading(false);
-        setErrorMsg('ASHA ID or PIN not found. Please register first.');
+        setErrorMsg(t('login.loginError'));
       }
     } catch (error) {
       console.error(error);
-      setErrorMsg('An error occurred during login');
+      setErrorMsg(t('common.error'));
       setIsLoading(false);
     }
   };
@@ -79,20 +82,20 @@ const LoginScreen: React.FC = () => {
       {/* Top 40% */}
       <View style={styles.topSection}>
         <SafeAreaView>
-          <Text style={styles.logoText}>Maatri.AI</Text>
-          <Text style={styles.taglineHi}>माँ और शिशु की देखभाल</Text>
-          <Text style={styles.taglineEn}>Maternal & Neonatal Care AI</Text>
+          <Text style={styles.logoText}>{t('app.name')}</Text>
+          <Text style={styles.taglineHi}>{t('app.tagline')}</Text>
+          <Text style={styles.taglineEn}>{t('app.taglineEn')}</Text>
         </SafeAreaView>
       </View>
 
       {/* Bottom 60% */}
       <View style={styles.bottomSection}>
-        <Text style={styles.title}>ASHA Worker Login</Text>
+        <Text style={styles.title}>{t('login.title')}</Text>
         
-        <Text style={styles.label}>ASHA ID</Text>
+        <Text style={styles.label}>{t('login.ashaIdLabel')}</Text>
         <TextInput
           style={[styles.input, isFocused === 'id' && styles.inputFocused]}
-          placeholder="Enter your ASHA ID"
+          placeholder={t('login.ashaIdPlaceholder')}
           keyboardType="numeric"
           value={ashaId}
           onChangeText={setAshaId}
@@ -100,10 +103,10 @@ const LoginScreen: React.FC = () => {
           onBlur={() => setIsFocused(null)}
         />
 
-        <Text style={styles.label}>4-digit PIN</Text>
+        <Text style={styles.label}>{t('login.pinLabel')}</Text>
         <TextInput
           style={[styles.input, isFocused === 'pin' && styles.inputFocused]}
-          placeholder="Enter 4-digit PIN"
+          placeholder={t('login.pinPlaceholder')}
           secureTextEntry
           maxLength={4}
           keyboardType="numeric"
@@ -123,12 +126,30 @@ const LoginScreen: React.FC = () => {
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.loginBtnText}>Login / लॉगिन</Text>
+            <Text style={styles.loginBtnText}>{t('login.loginBtn')}</Text>
           )}
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate('Onboarding')}>
-          <Text style={styles.setupText}>First time? पहली बार? Setup account</Text>
+          <Text style={styles.setupText}>{t('login.setupText')}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={{ marginTop: 24, padding: 10 }}
+          onPress={async () => {
+            setIsLoading(true);
+            try {
+              await loadDemoData();
+              signIn();
+            } catch (e) {
+              console.error(e);
+              setIsLoading(false);
+            }
+          }}
+        >
+          <Text style={{ textAlign: 'center', color: '#757575', fontSize: 13, fontWeight: 'bold' }}>
+            🎯 Try Demo Mode
+          </Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

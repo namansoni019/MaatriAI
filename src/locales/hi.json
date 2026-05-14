@@ -1,3 +1,79 @@
 {
-  "greeting": "नमस्ते"
+  "app": {
+    "name": "Maatri.AI",
+    "tagline": "माँ और शिशु की देखभाल",
+    "taglineEn": "Maternal & Neonatal Care AI"
+  },
+  "common": {
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "next": "आगे",
+    "back": "पीछे",
+    "yes": "हाँ",
+    "no": "नहीं",
+    "loading": "लोड हो रहा है...",
+    "error": "कुछ गलत हुआ",
+    "retry": "फिर कोशिश करें",
+    "offline": "नेटवर्क नहीं है",
+    "syncing": "सिंक हो रहा है...",
+    "synced": "सब सिंक हो गया",
+    "required": "ज़रूरी है",
+    "optional": "वैकल्पिक"
+  },
+  "login": {
+    "title": "ASHA वर्कर लॉगिन",
+    "ashaIdLabel": "अपना ASHA ID डालें",
+    "ashaIdPlaceholder": "ASHA ID डालें",
+    "pinLabel": "4-अंकों का पिन",
+    "pinPlaceholder": "पिन डालें",
+    "emptyIdError": "ASHA ID खाली नहीं हो सकता",
+    "invalidPinError": "पिन 4 अंकों का होना चाहिए",
+    "loginBtn": "लॉगिन करें",
+    "setupText": "पहली बार आये हैं? नया अकाउंट बनाएं",
+    "loginError": "ID या पिन गलत है। पहले रजिस्टर करें।"
+  },
+  "home": {
+    "goodMorning": "सुप्रभात",
+    "goodAfternoon": "नमस्कार",
+    "goodEvening": "शुभ संध्या",
+    "priorityVisits": "आज की ज़रूरी यात्राएं",
+    "otherMothers": "अन्य माताएं",
+    "reminders": "याद दिलाएं",
+    "noMothersTitle": "अभी तक कोई माँ नहीं जुड़ी है",
+    "noMothersSub": "माताओं को जोड़ने के लिए 'Mothers' टैब पर जाएं",
+    "addMotherBtn": "+ माँ जोड़ें",
+    "totalMothers": "कुल\nमाताएं",
+    "highRisk": "अधिक\nजोखिम",
+    "visitsToday": "आज की\nयात्रा",
+    "breathScans": "सांस की\nजांच",
+    "pendingSync": "सिंक\nबाकी है",
+    "visitBtn": "यात्रा करें →",
+    "visitOverdue": "यात्रा का समय निकल गया है",
+    "nearDelivery": "जल्द डिलीवरी होने वाली है",
+    "lastVisit": "पिछली यात्रा:",
+    "neverVisited": "कभी नहीं",
+    "daysAgo": "दिन पहले",
+    "noVisit": "यात्रा नहीं हुई"
+  },
+  "visit": {
+    "highRiskReason": "⚠️ अधिक जोखिम, जांच ज़रूरी है",
+    "nearDeliveryReason": "🕐 डिलीवरी पास है — हर हफ्ते जांच करें",
+    "overdueReason": "📅 यात्रा का समय निकल गया है",
+    "routineReason": "✓ सामान्य जांच"
+  },
+  "danger": {
+    "emergencyTitle": "🚨 आपातकाल (EMERGENCY)",
+    "attentionTitle": "⚠️ ध्यान दें",
+    "callSupervisor": "📞 ANM दीदी को कॉल करें",
+    "goToHospital": "🏥 तुरंत बड़े अस्पताल ले जाएं",
+    "viewRiskScore": "📊 पूरा जोखिम स्कोर देखें",
+    "monitorClosely": "नज़र रखें। 2 दिन बाद फिर आएं।"
+  },
+  "sync": {
+    "offlineText": "● नेटवर्क नहीं है • {{count}} रिकॉर्ड बाकी हैं",
+    "pendingText": "↑ {{count}} रिकॉर्ड सिंक करने हैं • अभी सिंक करें",
+    "syncingText": "⟳ {{count}} रिकॉर्ड सिंक हो रहे हैं...",
+    "syncedText": "✓ सब सिंक हो गया • अभी",
+    "syncFailed": "सिंक नहीं हो पाया: {{error}}"
+  }
 }

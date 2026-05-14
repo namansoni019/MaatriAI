@@ -1,3 +1,79 @@
 {
-  "greeting": "नमस्कार"
+  "app": {
+    "name": "Maatri.AI",
+    "tagline": "माता आणि बाळाची काळजी",
+    "taglineEn": "Maternal & Neonatal Care AI"
+  },
+  "common": {
+    "save": "जतन करा",
+    "cancel": "रद्द करा",
+    "next": "पुढे",
+    "back": "मागे",
+    "yes": "होय",
+    "no": "नाही",
+    "loading": "लोड होत आहे...",
+    "error": "काहीतरी चूक झाली",
+    "retry": "पुन्हा प्रयत्न करा",
+    "offline": "नेटवर्क नाही",
+    "syncing": "सिंक होत आहे...",
+    "synced": "सर्व सिंक झाले",
+    "required": "आवश्यक आहे",
+    "optional": "पर्यायी"
+  },
+  "login": {
+    "title": "ASHA वर्कर लॉगिन",
+    "ashaIdLabel": "तुमचा ASHA ID टाका",
+    "ashaIdPlaceholder": "ASHA ID टाका",
+    "pinLabel": "4-अंकी पिन",
+    "pinPlaceholder": "पिन टाका",
+    "emptyIdError": "ASHA ID रिकामा असू शकत नाही",
+    "invalidPinError": "पिन 4 अंकी असावा",
+    "loginBtn": "लॉगिन करा",
+    "setupText": "पहिल्यांदा आलात? नवीन खाते काढा",
+    "loginError": "ID किंवा पिन चुकीचा आहे. आधी नोंदणी करा."
+  },
+  "home": {
+    "goodMorning": "शुभ प्रभात",
+    "goodAfternoon": "नमस्कार",
+    "goodEvening": "शुभ संध्याकाळ",
+    "priorityVisits": "आजच्या महत्त्वाच्या भेटी",
+    "otherMothers": "इतर माता",
+    "reminders": "आठवण",
+    "noMothersTitle": "अजून कोणतीही माता जोडलेली नाही",
+    "noMothersSub": "माता जोडण्यासाठी 'Mothers' टॅबवर जा",
+    "addMotherBtn": "+ माता जोडा",
+    "totalMothers": "एकूण\nमाता",
+    "highRisk": "जास्त\nधोका",
+    "visitsToday": "आजच्या\nभेटी",
+    "breathScans": "श्वासाची\nतपासणी",
+    "pendingSync": "सिंक\nबाकी",
+    "visitBtn": "भेट द्या →",
+    "visitOverdue": "भेटीची वेळ निघून गेली आहे",
+    "nearDelivery": "लवकरच प्रसूती होणार आहे",
+    "lastVisit": "शेवटची भेट:",
+    "neverVisited": "कधीही नाही",
+    "daysAgo": "दिवसांपूर्वी",
+    "noVisit": "भेट झाली नाही"
+  },
+  "visit": {
+    "highRiskReason": "⚠️ जास्त धोका, तपासणी आवश्यक आहे",
+    "nearDeliveryReason": "🕐 प्रसूती जवळ आहे — दर आठवड्याला तपासणी करा",
+    "overdueReason": "📅 भेटीची वेळ निघून गेली आहे",
+    "routineReason": "✓ सामान्य तपासणी"
+  },
+  "danger": {
+    "emergencyTitle": "🚨 आणीबाणी (EMERGENCY)",
+    "attentionTitle": "⚠️ लक्ष द्या",
+    "callSupervisor": "📞 ANM ताईला कॉल करा",
+    "goToHospital": "🏥 त्वरित मोठ्या रुग्णालयात न्या",
+    "viewRiskScore": "📊 संपूर्ण धोक्याचा स्कोर पहा",
+    "monitorClosely": "लक्ष ठेवा. 2 दिवसांनंतर पुन्हा भेट द्या."
+  },
+  "sync": {
+    "offlineText": "● नेटवर्क नाही • {{count}} रेकॉर्ड बाकी",
+    "pendingText": "↑ {{count}} रेकॉर्ड सिंक करायचे आहेत • आता सिंक करा",
+    "syncingText": "⟳ {{count}} रेकॉर्ड सिंक होत आहेत...",
+    "syncedText": "✓ सर्व सिंक झाले • आत्ताच",
+    "syncFailed": "सिंक होऊ शकले नाही: {{error}}"
+  }
 }

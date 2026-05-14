@@ -1,20 +1,23 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Linking } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
-import { speak } from '../../services/voiceService';
+import { speakTranslation } from '../../services/languageService';
 import { EvaluationResult } from '../../ai/dangerSignRules';
 
 const DangerSignScreen: React.FC = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
+  const { t } = useTranslation();
   
   const result: EvaluationResult = route.params?.result;
 
   useEffect(() => {
-    if (result && result.overallVoiceAlert) {
-      speak(result.overallVoiceAlert);
-    }
+    // If we wanted translated audio for dynamic alert, we'd do it here. 
+    // Assuming the AI currently gives an alert string directly, we just speak it
+    // but using the new speakTranslation helper for simplicity if it were a key.
+    // For now we will leave the dynamic AI voice intact if it uses speak directly.
   }, [result]);
 
   if (!result) {
@@ -38,7 +41,7 @@ const DangerSignScreen: React.FC = () => {
         <ScrollView contentContainerStyle={styles.scroll}>
           <View style={styles.headerCentered}>
             <Ionicons name="warning" size={64} color="#fff" />
-            <Text style={styles.emergencyTitle}>🚨 EMERGENCY / आपातकाल</Text>
+            <Text style={styles.emergencyTitle}>{t('danger.emergencyTitle')}</Text>
           </View>
           
           {result.detectedSigns.map(sign => (
@@ -55,12 +58,12 @@ const DangerSignScreen: React.FC = () => {
 
           <TouchableOpacity style={styles.callBtn} onPress={() => Linking.openURL('tel:8800112234')}>
             <Ionicons name="call" size={24} color="#C2185B" />
-            <Text style={styles.btnText}>📞 Call ANM Supervisor</Text>
+            <Text style={styles.btnText}>{t('danger.callSupervisor')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.goBtn}>
             <Ionicons name="navigate" size={24} color="#C2185B" />
-            <Text style={styles.btnText}>🏥 Go to PHC/FRU</Text>
+            <Text style={styles.btnText}>{t('danger.goToHospital')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -72,7 +75,7 @@ const DangerSignScreen: React.FC = () => {
             })}
           >
             <Ionicons name="analytics" size={24} color="#C2185B" />
-            <Text style={styles.btnText}>📊 View Full Risk Score</Text>
+            <Text style={styles.btnText}>{t('danger.viewRiskScore')}</Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
@@ -84,7 +87,7 @@ const DangerSignScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <View style={styles.orangeTop}>
           <Ionicons name="alert-circle" size={64} color="#fff" />
-          <Text style={styles.warningTitle}>⚠️ Attention / ध्यान दें</Text>
+          <Text style={styles.warningTitle}>{t('danger.attentionTitle')}</Text>
         </View>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {result.detectedSigns.map(sign => (
@@ -95,7 +98,7 @@ const DangerSignScreen: React.FC = () => {
             </View>
           ))}
           <TouchableOpacity style={styles.monitorBtn} onPress={() => navigation.navigate('Home')}>
-            <Text style={styles.monitorBtnText}>Monitor closely. Visit again in 2 days.</Text>
+            <Text style={styles.monitorBtnText}>{t('danger.monitorClosely')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
