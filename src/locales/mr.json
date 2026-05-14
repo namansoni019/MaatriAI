@@ -282,7 +282,10 @@
     "noPending": "सिंक करण्यासाठी कोणतेही नवीन रेकॉर्ड नाही.",
     "successMsg": "डेटा यशस्वीरित्या सिंक झाला!",
     "failMsg": "सिंक अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
-    "unsyncedNewborns": "सिंक बाकी नवजात:"
+    "unsyncedNewborns": "सिंक बाकी नवजात:",
+    "pendingItems": "Pending Items",
+    "syncAdvice": "Please connect to the internet and sync your data to keep it safe.",
+    "unsyncedRecords": "Unsynced Records"
   },
   "visionScan": {
     "title": "नवजात तपासणी",
