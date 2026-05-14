@@ -1,24 +1,36 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView,
-  ActivityIndicator, Animated, Easing, FlatList,
+  View, Text, StyleSheet, TouchableOpacity, ScrollView,
+  Animated, Easing, Dimensions, Platform
 } from 'react-native';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { db } from '../../database/db';
 import { getAllMothers } from '../../database/motherRepository';
 import { Mother } from '../../types';
-import SyncStatusBar from '../../components/SyncStatusBar';
 
-// ── Priority scoring
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// ── Types ──
 interface ScoredMother extends Mother {
   priorityScore: number;
   daysSinceVisit: number;
   visitReasonKey: string;
 }
 
+interface ActivityItem {
+  id: string;
+  type: 'visit' | 'highRisk' | 'mother' | 'sync';
+  titleKey: string;
+  subtitle: string;
+  date: Date;
+}
+
+// ── Logic Helpers ──
 const scoreMother = (m: Mother): ScoredMother => {
   let score = 0;
   if (m.riskTier === 'RED') score += 100;
@@ -28,6 +40,7 @@ const scoreMother = (m: Mother): ScoredMother => {
   const daysSinceVisit = m.lastVisitDate
     ? Math.floor((Date.now() - new Date(m.lastVisitDate).getTime()) / 86400000)
     : 999;
+  
   if (daysSinceVisit > 14) score += 40;
   else if (daysSinceVisit > 7) score += 20;
 
@@ -45,40 +58,70 @@ const scoreMother = (m: Mother): ScoredMother => {
   return { ...m, priorityScore: score, daysSinceVisit, visitReasonKey };
 };
 
+const AnimatedNumber = ({ value, style }: { value: number, style?: any }) => {
+  const [displayVal, setDisplayVal] = useState(0);
+  const anim = useRef(new Animated.Value(0)).current;
 
+  useEffect(() => {
+    anim.stopAnimation();
+    Animated.timing(anim, {
+      toValue: value,
+      duration: 800,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start();
 
-// ── Skeleton placeholder
-const SkeletonBar = ({ width, height = 14 }: { width: string | number; height?: number }) => {
+    anim.addListener((v) => {
+      setDisplayVal(Math.floor(v.value));
+    });
+    return () => anim.removeAllListeners();
+  }, [value]);
+
+  return <Text style={style}>{displayVal}</Text>;
+};
+
+// ── Premium Skeleton ──
+const PremiumSkeleton = ({ width, height = 16, borderRadius = 8, style }: any) => {
   const anim = useRef(new Animated.Value(0.3)).current;
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(anim, { toValue: 1, duration: 800, easing: Easing.ease, useNativeDriver: true }),
+        Animated.timing(anim, { toValue: 0.7, duration: 800, easing: Easing.ease, useNativeDriver: true }),
         Animated.timing(anim, { toValue: 0.3, duration: 800, easing: Easing.ease, useNativeDriver: true }),
       ])
     ).start();
   }, []);
-  return <Animated.View style={{ width: width as any, height, borderRadius: 6, backgroundColor: '#E0E0E0', opacity: anim, marginBottom: 8 }} />;
+  return <Animated.View style={[{ width, height, borderRadius, backgroundColor: '#E5E7EB', opacity: anim }, style]} />;
 };
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const isFocused = useIsFocused();
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
 
   const [userName, setUserName] = useState('');
-  const [ashaId, setAshaId] = useState('');
   const [loading, setLoading] = useState(true);
-  const [mothers, setMothers] = useState<ScoredMother[]>([]);
-  const [showOthers, setShowOthers] = useState(false);
-
-  // Stats
+  
   const [totalMothers, setTotalMothers] = useState(0);
   const [highRisk, setHighRisk] = useState(0);
   const [visitsToday, setVisitsToday] = useState(0);
+  const [breathCount, setBreathCount] = useState(0);
+  const [visionCount, setVisionCount] = useState(0);
   const [unsynced, setUnsynced] = useState(0);
-  const [breathScans, setBreathScans] = useState(0);
-  const [reminders, setReminders] = useState<string[]>([]);
+  
+  const [priorityMothers, setPriorityMothers] = useState<ScoredMother[]>([]);
+  const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
+
+  // Animations
+  const animHeader = useRef(new Animated.Value(0)).current;
+  const animStats = useRef(new Animated.Value(0)).current;
+  const animAlert = useRef(new Animated.Value(0)).current;
+  const animVisits = useRef(new Animated.Value(0)).current;
+  const animActions = useRef(new Animated.Value(0)).current;
+  const animTimeline = useRef(new Animated.Value(0)).current;
+  
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   const loadData = async () => {
     setLoading(true);
@@ -87,23 +130,30 @@ const HomeScreen: React.FC = () => {
       if (!sessionStr) return;
       const session = JSON.parse(sessionStr);
       setUserName(session.name || 'ASHA Worker');
-      const aid = session.odId || '';
-      setAshaId(aid);
+      const aid = session.odId || session.id || '';
 
-      // Fetch mothers
+      // Mothers
       const allMothers = await getAllMothers(aid);
       const scored = allMothers.map(scoreMother).sort((a, b) => b.priorityScore - a.priorityScore);
-      setMothers(scored);
+      setPriorityMothers(scored.slice(0, 3));
+      
+      const hrCount = allMothers.filter(m => m.riskTier === 'RED').length;
       setTotalMothers(allMothers.length);
-      setHighRisk(allMothers.filter(m => m.riskTier === 'RED').length);
+      setHighRisk(hrCount);
 
-      // Visits today
-      const today = new Date().toISOString().split('T')[0];
+      // Visits Today
+      const todayStr = new Date().toISOString().split('T')[0];
       const vt: any = await db.getFirstAsync(
         "SELECT COUNT(*) as count FROM visits WHERE asha_id = ? AND visit_date LIKE ?",
-        [aid, `${today}%`]
+        [aid, `${todayStr}%`]
       );
       setVisitsToday(vt?.count || 0);
+
+      const bc: any = await db.getFirstAsync("SELECT COUNT(*) as count FROM breath_scans WHERE asha_id = ?", [aid]);
+      setBreathCount(bc?.count || 0);
+
+      const vc: any = await db.getFirstAsync("SELECT COUNT(*) as count FROM newborns WHERE asha_id = ?", [aid]);
+      setVisionCount(vc?.count || 0);
 
       // Unsynced
       const um: any = await db.getFirstAsync('SELECT COUNT(*) as c FROM mothers WHERE is_synced = 0');
@@ -112,282 +162,447 @@ const HomeScreen: React.FC = () => {
       const ub: any = await db.getFirstAsync('SELECT COUNT(*) as c FROM breath_scans WHERE is_synced = 0');
       setUnsynced((um?.c || 0) + (uv?.c || 0) + (un?.c || 0) + (ub?.c || 0));
 
-      // Breath scans
-      const bs: any = await db.getFirstAsync('SELECT COUNT(*) as c FROM breath_scans');
-      setBreathScans(bs?.c || 0);
+      // Recent Activity
+      const activities: ActivityItem[] = [];
+      const visits: any[] = await db.getAllAsync("SELECT * FROM visits WHERE asha_id = ? ORDER BY visit_date DESC LIMIT 3", [aid]);
+      
+      for (const v of visits) {
+        if (v.riskTierAtVisit === 'RED') {
+          activities.push({ id: `hr_${v.id}`, type: 'highRisk', titleKey: 'home.highRiskFound', subtitle: `Tier: RED`, date: new Date(v.visitDate) });
+        } else {
+          activities.push({ id: `v_${v.id}`, type: 'visit', titleKey: 'home.visitCompleted', subtitle: `Routine Check`, date: new Date(v.visitDate) });
+        }
+      }
+      setRecentActivities(activities.slice(0, 3));
 
-      // Reminders
-      const rems: string[] = [];
-      const now = Date.now();
-      allMothers.forEach(m => {
-        if (m.nextVisitDate && new Date(m.nextVisitDate).getTime() < now) {
-          rems.push(`📅 ${m.name} — ${t('home.visitOverdue')}`);
-        }
-        if (m.weeksPregnant >= 35 && m.weeksPregnant <= 36) {
-          rems.push(`🕐 ${m.name} — ${t('home.nearDelivery')}`);
-        }
-      });
-      setReminders(rems);
     } catch (e) {
-      console.error('Home load error:', e);
+      console.error(e);
     } finally {
       setLoading(false);
+      startMountAnimations();
     }
   };
 
   useEffect(() => { if (isFocused) loadData(); }, [isFocused]);
 
-  const priorityMothers = mothers.slice(0, 5);
-  const otherMothers = mothers.slice(5);
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 0.75, duration: 750, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 750, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
 
-  // ── Risk color helpers
-  const riskColor = (t: string) => t === 'RED' ? '#F44336' : t === 'AMBER' ? '#FF9800' : '#4CAF50';
-  const dayColor = (d: number) => d > 14 ? '#F44336' : d > 7 ? '#FF9800' : '#4CAF50';
+  const startMountAnimations = () => {
+    animHeader.setValue(0);
+    animStats.setValue(0);
+    animAlert.setValue(0);
+    animVisits.setValue(0);
+    animActions.setValue(0);
+    animTimeline.setValue(0);
 
-  const formatLastVisit = (d: string | null) => {
-    if (!d) return 'Never';
-    return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    Animated.stagger(100, [
+      Animated.timing(animHeader, { toValue: 1, duration: 400, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(animStats, { toValue: 1, duration: 400, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(animAlert, { toValue: 1, duration: 400, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(animVisits, { toValue: 1, duration: 400, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(animActions, { toValue: 1, duration: 400, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(animTimeline, { toValue: 1, duration: 400, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+    ]).start();
   };
 
-  // ═══════════════════════════════════════
-  // RENDER: Priority Card
-  // ═══════════════════════════════════════
-  const renderPriorityCard = (m: ScoredMother, index: number) => (
-    <TouchableOpacity
-      key={m.id}
-      style={styles.pCard}
-      activeOpacity={0.7}
-      onPress={() => navigation.navigate('Mothers', { screen: 'MotherProfile', params: { motherId: m.id, motherName: m.name } })}
-    >
-      {/* Left risk strip */}
-      <View style={[styles.pStrip, { backgroundColor: riskColor(m.riskTier) }]} />
+  const getGreeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return t('home.goodMorning');
+    if (h < 17) return t('home.goodAfternoon');
+    return t('home.goodEvening');
+  };
 
-      <View style={styles.pContent}>
-        {/* Top row */}
-        <View style={styles.pTopRow}>
-          <View style={styles.pBadge}><Text style={styles.pBadgeText}>{index + 1}</Text></View>
-          <Text style={styles.pName} numberOfLines={1}>{m.name}</Text>
-          <View style={[styles.riskTag, { backgroundColor: riskColor(m.riskTier) + '20' }]}>
-            <Text style={[styles.riskTagText, { color: riskColor(m.riskTier) }]}>{m.riskTier}</Text>
+  const getFadeSlide = (anim: Animated.Value) => ({
+    opacity: anim,
+    transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }]
+  });
+
+  const renderSkeleton = () => (
+    <View style={styles.container}>
+      <LinearGradient colors={['#880E4F', '#C2185B', '#E91E8C']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.headerGradient, { paddingTop: insets.top + 16, height: 180 + insets.top }]}>
+        <View style={styles.headerTop}>
+          <View>
+            <PremiumSkeleton width={100} height={14} style={{ marginBottom: 8, backgroundColor: 'rgba(255,255,255,0.3)' }} />
+            <PremiumSkeleton width={160} height={28} style={{ backgroundColor: 'rgba(255,255,255,0.4)' }} />
           </View>
+          <PremiumSkeleton width={50} height={50} borderRadius={25} style={{ backgroundColor: 'rgba(255,255,255,0.3)' }} />
         </View>
-
-        {/* Middle row */}
-        <View style={styles.pMidRow}>
-          <Text style={styles.pMeta}>🏘️ {m.village || '—'}</Text>
-          <Text style={styles.pMeta}>  🤰 {m.weeksPregnant || 0} weeks</Text>
+      </LinearGradient>
+      <View style={{ paddingHorizontal: 16, marginTop: -28 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          {[1,2,3].map(i => <PremiumSkeleton key={i} width={(SCREEN_WIDTH - 48)/3} height={110} borderRadius={16} style={{ backgroundColor: '#fff' }} />)}
         </View>
-
-        {/* Visit reason */}
-        <Text style={styles.pReason}>{t(m.visitReasonKey)}</Text>
-
-        {/* Bottom row */}
-        <View style={styles.pBottomRow}>
-          <Text style={styles.pDate}>{t('home.lastVisit')} {formatLastVisit(m.lastVisitDate)}</Text>
-          <Text style={[styles.pDays, { color: dayColor(m.daysSinceVisit) }]}>
-            {m.daysSinceVisit >= 999 ? t('home.noVisit') : `${m.daysSinceVisit} ${t('home.daysAgo')}`}
-          </Text>
-          <TouchableOpacity
-            style={styles.pVisitBtn}
-            onPress={() => navigation.navigate('Mothers', { screen: 'StartVisit', params: { motherId: m.id } })}
-          >
-            <Text style={styles.pVisitBtnText}>{t('home.visitBtn')}</Text>
-          </TouchableOpacity>
-        </View>
+        <PremiumSkeleton width="100%" height={30} style={{ marginTop: 24, marginBottom: 16 }} />
+        <PremiumSkeleton width="100%" height={140} borderRadius={20} style={{ backgroundColor: '#fff', marginBottom: 12 }} />
+        <PremiumSkeleton width="100%" height={140} borderRadius={20} style={{ backgroundColor: '#fff' }} />
       </View>
-    </TouchableOpacity>
+    </View>
   );
 
-  // ═══════════════════════════════════════
-  // RENDER: Stat card
-  // ═══════════════════════════════════════
-  const renderStat = (emoji: string, count: number, label: string, tint?: string, onTap?: () => void) => (
-    <TouchableOpacity
-      key={label}
-      style={[styles.statCard, tint ? { backgroundColor: tint + '10' } : null]}
-      activeOpacity={onTap ? 0.7 : 1}
-      onPress={onTap}
-    >
-      <Text style={styles.statEmoji}>{emoji}</Text>
-      <Text style={[styles.statCount, tint ? { color: tint } : null]}>{count}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </TouchableOpacity>
-  );
+  if (loading) return renderSkeleton();
 
-  // ═══════════════════════════════════════
-  // LOADING SKELETON
-  // ═══════════════════════════════════════
-  if (loading && mothers.length === 0) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <View><SkeletonBar width={120} /><SkeletonBar width={180} height={22} /><SkeletonBar width={160} /></View>
-        </View>
-        <View style={{ padding: 20 }}>
-          <SkeletonBar width="60%" height={18} />
-          {[1,2,3].map(i => <View key={i} style={{ backgroundColor: '#fff', borderRadius: 14, padding: 16, marginBottom: 12 }}><SkeletonBar width="80%" height={16} /><SkeletonBar width="50%" /><SkeletonBar width="70%" /></View>)}
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // ═══════════════════════════════════════
-  // MAIN RENDER
-  // ═══════════════════════════════════════
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-
-        {/* ── HEADER */}
-        <View style={styles.header}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.greeting}>
-              {new Date().getHours() < 12 ? t('home.goodMorning') : 
-               new Date().getHours() < 17 ? t('home.goodAfternoon') : 
-               t('home.goodEvening')}
-            </Text>
-            <Text style={styles.headerName}>{userName}</Text>
-          </View>
-          <TouchableOpacity style={styles.bellBtn} onPress={() => navigation.navigate('Profile')}>
-            <Ionicons name="person-circle-outline" size={32} color="#fff" />
-          </TouchableOpacity>
-        </View>
-
-        {/* ── SYNC BAR */}
-        {ashaId ? <SyncStatusBar ashaId={ashaId} /> : null}
-
-        {/* ── QUICK STATS */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statsRow}>
-          {renderStat('👩', totalMothers, t('home.totalMothers'))}
-          {renderStat('🔴', highRisk, t('home.highRisk'), '#F44336')}
-          {renderStat('📅', visitsToday, t('home.visitsToday'), '#2196F3')}
-          {renderStat('🫁', breathScans, t('home.breathScans'), '#9C27B0')}
-          {renderStat('☁️', unsynced, t('home.pendingSync'), unsynced > 0 ? '#FF9800' : undefined, () => navigation.navigate('Sync'))}
-        </ScrollView>
-
-        {/* ── EMPTY STATE */}
-        {mothers.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={{ fontSize: 48, marginBottom: 12 }}>🤰</Text>
-            <Text style={styles.emptyTitle}>{t('home.noMothersTitle')}</Text>
-            <Text style={styles.emptyHindi}>{t('home.noMothersSub')}</Text>
-            <TouchableOpacity style={styles.emptyBtn} onPress={() => navigation.navigate('Mothers', { screen: 'AddMother' })}>
-              <Text style={styles.emptyBtnText}>{t('home.addMotherBtn')}</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <>
-            {/* ── PRIORITY VISITS */}
-            <Text style={styles.sectionTitle}>{t('home.priorityVisits')}</Text>
-            {priorityMothers.map((m, i) => renderPriorityCard(m, i))}
-
-            {/* ── OTHER MOTHERS (collapsible) */}
-            {otherMothers.length > 0 && (
-              <>
-                <TouchableOpacity style={styles.otherHeader} onPress={() => setShowOthers(!showOthers)}>
-                  <Text style={styles.otherTitle}>{t('home.otherMothers')} ({otherMothers.length})</Text>
-                  <Ionicons name={showOthers ? 'chevron-up' : 'chevron-down'} size={22} color="#757575" />
-                </TouchableOpacity>
-                {showOthers && otherMothers.map((m, i) => renderPriorityCard(m, i + 5))}
-              </>
-            )}
-
-            {/* ── REMINDERS */}
-            {reminders.length > 0 && (
-              <View style={{ marginHorizontal: 16, marginTop: 8, marginBottom: 16 }}>
-                <Text style={styles.sectionTitle}>{t('home.reminders')}</Text>
-                {reminders.map((r, i) => (
-                  <View key={i} style={styles.reminderChip}>
-                    <Text style={styles.reminderText}>{r}</Text>
-                  </View>
-                ))}
+    <View style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 90 }}>
+        
+        {/* 1. GRADIENT HEADER */}
+        <Animated.View style={getFadeSlide(animHeader)}>
+          <LinearGradient 
+            colors={['#880E4F', '#C2185B', '#E91E8C']} 
+            start={{ x: 0, y: 0 }} 
+            end={{ x: 1, y: 1 }} 
+            style={[styles.headerGradient, { paddingTop: insets.top + 16, height: 180 + insets.top }]}
+          >
+            <View style={styles.headerTop}>
+              <View>
+                <Text style={styles.greeting}>{getGreeting()}</Text>
+                <Text style={styles.userName}>{userName}</Text>
               </View>
-            )}
-          </>
+              <View style={styles.avatarBorder}>
+                <LinearGradient colors={['#E91E8C', '#C2185B']} style={styles.avatar}>
+                  <Text style={styles.avatarLetter}>{userName ? userName.charAt(0).toUpperCase() : 'A'}</Text>
+                </LinearGradient>
+              </View>
+            </View>
+            
+            <View style={styles.headerBottom}>
+              <View style={styles.pill}>
+                <Ionicons name="checkmark-circle" size={14} color="#fff" style={{ marginRight: 4 }} />
+                <Text style={styles.pillText}>{t('home.activeDuty')}</Text>
+              </View>
+              <View style={styles.pill}>
+                <Ionicons name="calendar" size={14} color="#fff" style={{ marginRight: 4 }} />
+                <Text style={styles.pillText}>{new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</Text>
+              </View>
+            </View>
+          </LinearGradient>
+        </Animated.View>
+
+        {/* 2. FLOATING STATS ROW */}
+        <Animated.View style={[styles.statsRow, getFadeSlide(animStats)]}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
+            <View style={[styles.statCard, { marginRight: 12 }]}>
+              <View style={[styles.iconCircle, { backgroundColor: '#FCE4EC' }]}>
+                <Ionicons name="people" size={20} color="#C2185B" />
+              </View>
+              <AnimatedNumber value={totalMothers} style={styles.statNumber} />
+              <Text style={styles.statLabel}>{t('app.tabMothers')}</Text>
+              <View style={styles.microBarBg}>
+                <View style={[styles.microBarFill, { width: totalMothers > 0 ? `${(highRisk/totalMothers)*100}%` : '0%', backgroundColor: '#C2185B' }]} />
+              </View>
+            </View>
+            
+            <View style={[styles.statCard, { marginRight: 12 }]}>
+              <View style={[styles.iconCircle, { backgroundColor: '#FFEBEE' }]}>
+                <Ionicons name="warning" size={20} color="#C62828" />
+              </View>
+              <AnimatedNumber value={highRisk} style={[styles.statNumber, { color: '#C62828' }]} />
+              <Text style={styles.statLabel}>{t('home.highRiskBadge')}</Text>
+              {highRisk > 0 && (
+                <Animated.View style={[styles.pulseDot, { transform: [{ scale: pulseAnim }] }]} />
+              )}
+            </View>
+
+            <View style={[styles.statCard, { marginRight: 12 }]}>
+              <View style={[styles.iconCircle, { backgroundColor: '#E0F2F1' }]}>
+                <Ionicons name="checkmark-done" size={20} color="#00897B" />
+              </View>
+              <AnimatedNumber value={visitsToday} style={[styles.statNumber, { color: '#00897B' }]} />
+              <Text style={styles.statLabel}>{t('home.visitCompleted')}</Text>
+            </View>
+
+            <View style={[styles.statCard, { marginRight: 12 }]}>
+              <View style={[styles.iconCircle, { backgroundColor: '#E1F5FE' }]}>
+                <Ionicons name="pulse" size={20} color="#0288D1" />
+              </View>
+              <AnimatedNumber value={breathCount} style={[styles.statNumber, { color: '#0288D1' }]} />
+              <Text style={styles.statLabel}>{t('home.actionBreath')}</Text>
+            </View>
+
+            <View style={styles.statCard}>
+              <View style={[styles.iconCircle, { backgroundColor: '#F3E5F5' }]}>
+                <Ionicons name="scan" size={20} color="#7B1FA2" />
+              </View>
+              <AnimatedNumber value={visionCount} style={[styles.statNumber, { color: '#7B1FA2' }]} />
+              <Text style={styles.statLabel}>{t('home.actionVision')}</Text>
+            </View>
+          </ScrollView>
+        </Animated.View>
+
+        {/* 3. URGENT ALERT BANNER */}
+        {highRisk > 0 && (
+          <Animated.View style={[{ paddingHorizontal: 16, marginBottom: 24 }, getFadeSlide(animAlert)]}>
+            <Animated.View style={{ opacity: pulseAnim }}>
+              <LinearGradient colors={['#C62828', '#E53935']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.urgentBanner}>
+                <View style={styles.urgentIconWrapper}>
+                  <Ionicons name="alert" size={20} color="#fff" />
+                </View>
+                <View style={styles.urgentTextWrapper}>
+                  <Text style={styles.urgentTitle}>{t('home.urgentTitle')}</Text>
+                  <Text style={styles.urgentSub}>{t('home.urgentSub', { count: highRisk })}</Text>
+                </View>
+                <TouchableOpacity style={styles.urgentBtn} onPress={() => navigation.navigate('Mothers')}>
+                  <Text style={styles.urgentBtnText}>{t('home.viewBtn')}</Text>
+                  <Ionicons name="chevron-forward" size={14} color="#fff" />
+                </TouchableOpacity>
+              </LinearGradient>
+            </Animated.View>
+          </Animated.View>
         )}
 
-        <View style={{ height: 30 }} />
+        {/* 4. PRIORITY VISITS */}
+        <Animated.View style={getFadeSlide(animVisits)}>
+          <View style={styles.sectionHeader}>
+            <View>
+              <Text style={styles.sectionTitle}>{t('home.priorityVisits')}</Text>
+              <View style={styles.titleUnderline} />
+            </View>
+            <TouchableOpacity style={styles.seeAllBtn} onPress={() => navigation.navigate('Mothers')}>
+              <Text style={styles.seeAllText}>{t('home.seeAll')}</Text>
+              <Ionicons name="chevron-forward" size={12} color="#C2185B" />
+            </TouchableOpacity>
+          </View>
+
+          {priorityMothers.length === 0 ? (
+            <View style={styles.premiumEmpty}>
+              <View style={styles.emptyIconCircle}>
+                <Ionicons name="checkmark-circle-outline" size={32} color="#C2185B" />
+              </View>
+              <Text style={styles.emptyTitle}>{t('home.noActivityTitle')}</Text>
+              <Text style={styles.emptySub}>{t('home.noActivitySub')}</Text>
+            </View>
+          ) : (
+            priorityMothers.map((m, i) => {
+              const rColors = m.riskTier === 'RED' ? ['#C62828', '#E53935'] : m.riskTier === 'AMBER' ? ['#E65100', '#F57C00'] : ['#00695C', '#00897B'];
+              const rBadge = m.riskTier === 'RED' ? t('home.highRiskBadge') : m.riskTier === 'AMBER' ? t('home.monitorBadge') : t('home.routineBadge');
+              const isOverdue = m.daysSinceVisit > 14 && m.daysSinceVisit < 999;
+              
+              return (
+                <View key={m.id} style={styles.priorityCard}>
+                  <View style={styles.pCardTop}>
+                    <View style={styles.pCardTopLeft}>
+                      <LinearGradient colors={rColors as any} style={styles.priorityCircle}>
+                        <Text style={styles.priorityNumber}>{i + 1}</Text>
+                      </LinearGradient>
+                      <View style={{ marginLeft: 12 }}>
+                        <Text style={styles.pCardName} numberOfLines={1}>{m.name}</Text>
+                        <View style={styles.pCardMetaRow}>
+                          <Ionicons name="location" size={12} color="#6B7280" />
+                          <Text style={styles.pCardMeta}>{m.village || '—'}</Text>
+                          <Ionicons name="body" size={12} color="#6B7280" style={{ marginLeft: 8 }} />
+                          <Text style={styles.pCardMeta}>{m.weeksPregnant} {t('motherProfile.weeksPregnant').replace(':', '')}</Text>
+                        </View>
+                      </View>
+                    </View>
+                    <View style={styles.pCardTopRight}>
+                      <View style={[styles.riskBadge, { backgroundColor: rColors[0] }]}>
+                        <Text style={styles.riskBadgeText}>{rBadge}</Text>
+                      </View>
+                      <Text style={[styles.pCardRecency, isOverdue && { color: '#C62828' }]}>
+                        {m.daysSinceVisit >= 999 ? 'Never' : `${m.daysSinceVisit}d ${t('home.ago')}`}
+                      </Text>
+                    </View>
+                  </View>
+                  
+                  <View style={styles.pCardDivider} />
+                  
+                  <View style={styles.pCardBottom}>
+                    <View style={styles.reasonChip}>
+                      <Ionicons name="information-circle" size={14} color="#C2185B" style={{ marginRight: 4 }} />
+                      <Text style={styles.reasonText}>{t(m.visitReasonKey)}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => navigation.navigate('Mothers', { screen: 'StartVisit', params: { motherId: m.id } })}>
+                      <LinearGradient colors={['#C2185B', '#E91E8C']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.startVisitBtn}>
+                        <Text style={styles.startVisitText}>{t('home.startVisit')}</Text>
+                        <Ionicons name="arrow-forward" size={12} color="#fff" />
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              );
+            })
+          )}
+        </Animated.View>
+
+        {/* 5. QUICK ACTIONS GRID */}
+        <Animated.View style={getFadeSlide(animActions)}>
+          <Text style={[styles.sectionTitle, { marginLeft: 16, marginTop: 16, marginBottom: 12 }]}>{t('home.quickActions')}</Text>
+          <View style={styles.gridContainer}>
+            <View style={styles.gridRow}>
+              <TouchableOpacity style={styles.gridItemWrapper} activeOpacity={0.8} onPress={() => navigation.navigate('Mothers', { screen: 'AddMother', params: { fromHome: true } })}>
+                <LinearGradient colors={['#E91E8C', '#C2185B']} style={styles.gridCard}>
+                  <View style={styles.gridDeco} />
+                  <Ionicons name="person-add" size={28} color="#fff" />
+                  <View style={{ marginTop: 12 }}>
+                    <Text style={styles.gridLabel}>{t('home.actionAddMother')}</Text>
+                    <Text style={styles.gridSub}>{t('home.actionAddMotherSub')}</Text>
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.gridItemWrapper} activeOpacity={0.8} onPress={() => navigation.navigate('Sync')}>
+                <LinearGradient colors={['#2E7D32', '#43A047']} style={styles.gridCard}>
+                  <View style={styles.gridDeco} />
+                  {unsynced > 0 && <View style={styles.syncDot} />}
+                  <Ionicons name="cloud-upload" size={28} color="#fff" />
+                  <View style={{ marginTop: 12 }}>
+                    <Text style={styles.gridLabel}>{t('home.actionSync')}</Text>
+                    <Text style={styles.gridSub}>{t('home.actionSyncSub', { count: unsynced })}</Text>
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Animated.View>
+
+        {/* 6. RECENT ACTIVITY TIMELINE */}
+        <Animated.View style={getFadeSlide(animTimeline)}>
+          <Text style={[styles.sectionTitle, { marginLeft: 16, marginTop: 24, marginBottom: 16 }]}>{t('home.recentActivity')}</Text>
+          
+          {recentActivities.length === 0 ? (
+            <View style={[styles.premiumEmpty, { marginHorizontal: 16 }]}>
+              <View style={[styles.emptyIconCircle, { backgroundColor: '#F3E5F5' }]}>
+                <Ionicons name="time-outline" size={32} color="#7B1FA2" />
+              </View>
+              <Text style={styles.emptyTitle}>{t('home.noActivityTitle')}</Text>
+              <Text style={styles.emptySub}>{t('home.noActivitySub')}</Text>
+            </View>
+          ) : (
+            <View style={styles.timelineContainer}>
+              <View style={styles.timelineLine} />
+              {recentActivities.map((act, i) => {
+                let dColor = '#C2185B';
+                if (act.type === 'highRisk') dColor = '#C62828';
+                else if (act.type === 'visit') dColor = '#00897B';
+                else if (act.type === 'sync') dColor = '#2E7D32';
+
+                return (
+                  <View key={act.id} style={styles.timelineItem}>
+                    <View style={[styles.timelineDot, { backgroundColor: dColor }]} />
+                    <View style={styles.timelineContent}>
+                      <Text style={styles.timelineTitle}>{t(act.titleKey)}</Text>
+                      <Text style={styles.timelineSub}>{act.subtitle} • {act.date.toLocaleDateString()}</Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </Animated.View>
+
+        {/* 7. MOTIVATIONAL STRIP */}
+        <Animated.View style={[getFadeSlide(animTimeline), { marginTop: 32 }]}>
+          <LinearGradient colors={['#FCE4EC', '#F8F4F9']} style={styles.motivationCard}>
+            <Ionicons name="shield-checkmark" size={36} color="#C2185B" />
+            <View style={{ marginLeft: 16, flex: 1 }}>
+              <Text style={styles.motivationTitle}>{t('home.motivationTitle')}</Text>
+              <Text style={styles.motivationSub}>{t('home.motivationSub', { monitored: totalMothers, lives: totalMothers + visitsToday })}</Text>
+            </View>
+          </LinearGradient>
+        </Animated.View>
+
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
-// ═══════════════════════════════════════
-// STYLES
-// ═══════════════════════════════════════
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F5F5' },
-
+  container: { flex: 1, backgroundColor: '#F8F4F9' },
+  
   // Header
-  header: {
-    backgroundColor: '#C2185B', paddingHorizontal: 20, paddingTop: 50, paddingBottom: 24,
-    borderBottomLeftRadius: 24, borderBottomRightRadius: 24,
-    flexDirection: 'row', alignItems: 'center',
-    elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.2, shadowRadius: 5,
-  },
-  greeting: { color: 'rgba(255,255,255,0.8)', fontSize: 14 },
-  headerName: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginVertical: 2 },
-  headerDate: { color: 'rgba(255,255,255,0.7)', fontSize: 13 },
-  bellBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center' },
+  headerGradient: { paddingHorizontal: 20, paddingBottom: 24, borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
+  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  greeting: { fontSize: 14, color: '#fff', opacity: 0.85, marginBottom: 4 },
+  userName: { fontSize: 28, color: '#fff', fontWeight: '800', letterSpacing: 0.5 },
+  avatarBorder: { width: 54, height: 54, borderRadius: 27, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' },
+  avatar: { width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center' },
+  avatarLetter: { color: '#fff', fontSize: 22, fontWeight: 'bold' },
+  headerBottom: { flexDirection: 'row', marginTop: 24, gap: 12 },
+  pill: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.2)', paddingVertical: 6, paddingHorizontal: 14, borderRadius: 99 },
+  pillText: { color: '#fff', fontSize: 12, fontWeight: '600' },
 
-  // Sync bar
-  syncBar: {
-    flexDirection: 'row', alignItems: 'center', marginHorizontal: 16, marginTop: -12,
-    borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10,
-    elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 2,
-  },
-  syncText: { fontSize: 13, marginLeft: 8, fontWeight: '500' },
+  // Stats
+  statsRow: { marginTop: -28, zIndex: 10 },
+  statCard: { width: 110, backgroundColor: '#fff', borderRadius: 16, padding: 14, elevation: 8, shadowColor: '#C2185B', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15, shadowRadius: 12, alignItems: 'center' },
+  iconCircle: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+  statNumber: { fontSize: 28, fontWeight: 'bold', color: '#1A1A2E' },
+  statLabel: { fontSize: 11, color: '#6B7280', marginTop: 2, textAlign: 'center' },
+  microBarBg: { width: '100%', height: 4, backgroundColor: '#F3F4F6', borderRadius: 2, marginTop: 8 },
+  microBarFill: { height: '100%', borderRadius: 2 },
+  pulseDot: { position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: '#C62828' },
 
-  // Stats row
-  statsRow: { paddingHorizontal: 16, paddingVertical: 16, gap: 10 },
-  statCard: {
-    backgroundColor: '#fff', borderRadius: 14, padding: 14, minWidth: 100, alignItems: 'center',
-    elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 2,
-  },
-  statEmoji: { fontSize: 24, marginBottom: 4 },
-  statCount: { fontSize: 24, fontWeight: 'bold', color: '#212121' },
-  statLabel: { fontSize: 11, color: '#757575', textAlign: 'center', marginTop: 2, lineHeight: 15 },
+  // Urgent Banner
+  urgentBanner: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: 16 },
+  urgentIconWrapper: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.25)', justifyContent: 'center', alignItems: 'center' },
+  urgentTextWrapper: { flex: 1, marginLeft: 12 },
+  urgentTitle: { color: '#fff', fontWeight: 'bold', fontSize: 14, marginBottom: 2 },
+  urgentSub: { color: '#fff', opacity: 0.85, fontSize: 12 },
+  urgentBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.25)', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 99 },
+  urgentBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 12, marginRight: 4 },
 
-  // Section
-  sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#212121', marginHorizontal: 16, marginBottom: 12, marginTop: 8 },
+  // Sections
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', paddingHorizontal: 16, marginBottom: 16, marginTop: 8 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#1A1A2E' },
+  titleUnderline: { width: 30, height: 3, backgroundColor: '#C2185B', marginTop: 4, borderRadius: 2 },
+  seeAllBtn: { flexDirection: 'row', alignItems: 'center' },
+  seeAllText: { color: '#C2185B', fontSize: 13, fontWeight: '600', marginRight: 2 },
 
-  // Priority card
-  pCard: {
-    backgroundColor: '#fff', borderRadius: 14, marginHorizontal: 16, marginBottom: 10,
-    flexDirection: 'row', overflow: 'hidden',
-    elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4,
-  },
-  pStrip: { width: 6 },
-  pContent: { flex: 1, padding: 12 },
-  pTopRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
-  pBadge: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#C2185B', justifyContent: 'center', alignItems: 'center', marginRight: 8 },
-  pBadgeText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
-  pName: { flex: 1, fontSize: 17, fontWeight: 'bold', color: '#212121' },
-  riskTag: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  riskTagText: { fontSize: 11, fontWeight: 'bold' },
-  pMidRow: { flexDirection: 'row', marginBottom: 4 },
-  pMeta: { fontSize: 13, color: '#757575' },
-  pReason: { fontSize: 12, color: '#9E9E9E', fontStyle: 'italic', marginBottom: 8 },
-  pBottomRow: { flexDirection: 'row', alignItems: 'center' },
-  pDate: { fontSize: 12, color: '#9E9E9E', flex: 1 },
-  pDays: { fontSize: 12, fontWeight: '600', marginRight: 12 },
-  pVisitBtn: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, backgroundColor: '#FCE4EC' },
-  pVisitBtnText: { color: '#C2185B', fontSize: 13, fontWeight: 'bold' },
+  // Priority Card
+  priorityCard: { backgroundColor: '#fff', marginHorizontal: 16, marginBottom: 12, borderRadius: 20, padding: 16, elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12 },
+  pCardTop: { flexDirection: 'row', justifyContent: 'space-between' },
+  pCardTopLeft: { flexDirection: 'row', flex: 1, alignItems: 'center' },
+  priorityCircle: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  priorityNumber: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
+  pCardName: { fontSize: 16, fontWeight: 'bold', color: '#1A1A2E', marginBottom: 4 },
+  pCardMetaRow: { flexDirection: 'row', alignItems: 'center' },
+  pCardMeta: { color: '#6B7280', fontSize: 13, marginLeft: 4 },
+  pCardTopRight: { alignItems: 'flex-end' },
+  riskBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginBottom: 6 },
+  riskBadgeText: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
+  pCardRecency: { color: '#6B7280', fontSize: 11, fontWeight: '500' },
+  pCardDivider: { height: 1, backgroundColor: '#F3F4F6', marginVertical: 12 },
+  pCardBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  reasonChip: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FCE4EC', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 99 },
+  reasonText: { color: '#C2185B', fontSize: 12, fontWeight: '500' },
+  startVisitBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 },
+  startVisitText: { color: '#fff', fontWeight: 'bold', fontSize: 12, marginRight: 6 },
 
-  // Other mothers
-  otherHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 16, marginTop: 8, marginBottom: 12, paddingVertical: 8, borderTopWidth: 1, borderTopColor: '#E0E0E0' },
-  otherTitle: { fontSize: 14, fontWeight: '600', color: '#757575' },
+  // Empty State
+  premiumEmpty: { marginHorizontal: 16, backgroundColor: '#fff', borderRadius: 20, padding: 32, alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8 },
+  emptyIconCircle: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#FCE4EC', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  emptyTitle: { fontSize: 16, fontWeight: 'bold', color: '#1A1A2E', marginBottom: 8 },
+  emptySub: { fontSize: 13, color: '#6B7280', textAlign: 'center' },
 
-  // Reminders
-  reminderChip: { backgroundColor: '#FFF8E1', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 6, borderLeftWidth: 4, borderLeftColor: '#FFB300' },
-  reminderText: { fontSize: 13, color: '#795548', fontWeight: '500' },
+  // Grid
+  gridContainer: { paddingHorizontal: 10 },
+  gridRow: { flexDirection: 'row', marginBottom: 12 },
+  gridItemWrapper: { flex: 1, paddingHorizontal: 6 },
+  gridCard: { flex: 1, borderRadius: 20, padding: 18, minHeight: 120, overflow: 'hidden' },
+  gridDeco: { position: 'absolute', right: -20, top: -20, width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.1)' },
+  gridLabel: { color: '#fff', fontWeight: 'bold', fontSize: 15, marginBottom: 2 },
+  gridSub: { color: '#fff', opacity: 0.85, fontSize: 12 },
+  syncDot: { position: 'absolute', top: 18, right: 18, width: 10, height: 10, borderRadius: 5, backgroundColor: '#FF9800', borderWidth: 2, borderColor: '#fff' },
 
-  // Empty state
-  emptyState: { alignItems: 'center', paddingVertical: 60, paddingHorizontal: 40 },
-  emptyTitle: { fontSize: 18, fontWeight: 'bold', color: '#424242', marginBottom: 6 },
-  emptyHindi: { fontSize: 14, color: '#9E9E9E', textAlign: 'center', marginBottom: 20 },
-  emptyBtn: { backgroundColor: '#C2185B', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 14 },
-  emptyBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  // Timeline
+  timelineContainer: { marginHorizontal: 16, paddingLeft: 10 },
+  timelineLine: { position: 'absolute', left: 16, top: 12, bottom: 0, width: 2, backgroundColor: '#F3F4F6' },
+  timelineItem: { flexDirection: 'row', marginBottom: 20, paddingLeft: 24, position: 'relative' },
+  timelineDot: { position: 'absolute', left: 1, top: 4, width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: '#F8F4F9' },
+  timelineContent: { flex: 1 },
+  timelineTitle: { fontSize: 14, fontWeight: 'bold', color: '#1A1A2E', marginBottom: 2 },
+  timelineSub: { fontSize: 12, color: '#6B7280' },
+
+  // Motivation
+  motivationCard: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 16, padding: 16, borderRadius: 20, borderWidth: 1, borderColor: '#F48FB1' },
+  motivationTitle: { color: '#C2185B', fontSize: 14, fontWeight: 'bold', marginBottom: 4 },
+  motivationSub: { color: '#6B7280', fontSize: 12 }
 });
 
 export default HomeScreen;

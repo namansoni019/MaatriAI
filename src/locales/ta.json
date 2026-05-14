@@ -2,7 +2,21 @@
   "app": {
     "name": "Maatri.AI",
     "tagline": "Maternal & Neonatal Care",
-    "taglineEn": "Maternal & Neonatal Care AI"
+    "taglineEn": "Maternal & Neonatal Care AI",
+    "myMothers": "My Mothers",
+    "addMother": "Add Mother",
+    "homeVisit": "Home Visit",
+    "riskScore": "Risk Score",
+    "alert": "Alert",
+    "visitSummary": "Visit Summary",
+    "newborn": "Newborn",
+    "newbornScan": "Newborn Scan",
+    "breathCheck": "Breath Check",
+    "mentalHealth": "Mental Health",
+    "tabHome": "Home",
+    "tabMothers": "Mothers",
+    "tabSync": "Sync",
+    "tabProfile": "Profile"
   },
   "common": {
     "save": "Save",
@@ -52,7 +66,34 @@
     "daysAgo": "d ago",
     "visitBtn": "Visit →",
     "visitOverdue": "visit overdue",
-    "nearDelivery": "reaching 36 weeks soon"
+    "nearDelivery": "reaching 36 weeks soon",
+    "activeDuty": "Active Duty",
+    "urgentTitle": "Urgent Attention Required",
+    "urgentSub": "{{count}} mothers need immediate visit",
+    "viewBtn": "View",
+    "seeAll": "See All",
+    "highRiskBadge": "HIGH RISK",
+    "monitorBadge": "MONITOR",
+    "routineBadge": "ROUTINE",
+    "ago": "ago",
+    "quickActions": "Quick Actions",
+    "actionAddMother": "Add Mother",
+    "actionAddMotherSub": "Register new",
+    "actionBreath": "Breath Scan",
+    "actionBreathSub": "Newborn check",
+    "actionVision": "Vision Scan",
+    "actionVisionSub": "Jaundice detect",
+    "actionSync": "Sync Data",
+    "actionSyncSub": "{{count}} pending",
+    "recentActivity": "Recent Activity",
+    "noActivityTitle": "No activity yet",
+    "noActivitySub": "Start your first visit",
+    "motivationTitle": "You are making a difference!",
+    "motivationSub": "{{monitored}} mothers monitored • {{lives}} lives protected",
+    "visitCompleted": "Visit completed",
+    "highRiskFound": "High risk found",
+    "motherAdded": "Mother added",
+    "syncDone": "Sync completed"
   },
   "visit": {
     "routineReason": "✓ Routine ANC check",
@@ -118,7 +159,17 @@
     "startVisitBtn": "Start Visit →",
     "noMothersTitle": "No mothers added yet",
     "noMothersSub": "Click below to add your first mother",
-    "addFirstBtn": "Add First Mother"
+    "addFirstBtn": "Add First Mother",
+    "filterAll": "All",
+    "filterHighRisk": "High Risk",
+    "filterMonitor": "Monitor",
+    "filterRoutine": "Routine",
+    "filterDueVisit": "Due Visit",
+    "fabAdd": "Add Mother",
+    "neverVisited": "Never",
+    "daysAgo": "ago",
+    "syncNeeded": "Sync needed",
+    "synced": "Synced"
   },
   "addMother": {
     "title": "Add Mother",
@@ -222,7 +273,8 @@
     "syncing": "Syncing...",
     "noPending": "No pending records to sync.",
     "successMsg": "Data synced successfully!",
-    "failMsg": "Failed to sync. Please try again."
+    "failMsg": "Failed to sync. Please try again.",
+    "unsyncedNewborns": "Unsynced Newborns:"
   },
   "visionScan": {
     "title": "Newborn Scan",
