@@ -158,7 +158,11 @@
     "errAge": "उम्र 10 से 60 के बीच होनी चाहिए",
     "errWeeks": "गर्भावस्था 1 से 42 हफ्तों के बीच होनी चाहिए",
     "saveBtn": "सुरक्षित करें",
-    "successMsg": "सफलतापूर्वक जोड़ दिया गया!"
+    "successMsg": "सफलतापूर्वक जोड़ दिया गया!",
+    "offlineBanner": "📱 फ़ोन पर सेव होगा। इंटरनेट की ज़रूरत नहीं।",
+    "anemiaSevere": "⚠️ गंभीर एनीमिया - तुरंत रेफर करें",
+    "anemiaMild": "हल्का एनीमिया - ध्यान दें",
+    "anemiaNormal": "सामान्य"
   },
   "motherProfile": {
     "title": "माँ की प्रोफाइल",
@@ -171,11 +175,23 @@
     "parity": "बच्चों की संख्या:",
     "latestVitals": "ताज़ा स्वास्थ्य जानकारी",
     "weight": "वज़न:",
-    "bmi": "BMI:",
+    "bmi": "⚖️ BMI: ",
     "recentVisits": "पिछली यात्राएं",
     "newborns": "नवजात शिशु",
     "addNewbornBtn": "+ शिशु जोड़ें",
-    "startVisitBtn": "यात्रा शुरू करें"
+    "startVisitBtn": "यात्रा शुरू करें",
+    "riskScore": "जोखिम स्कोर: ",
+    "weeksPregnant": "गर्भावस्था के सप्ताह: ",
+    "abhaId": "ABHA ID",
+    "hemoglobin": "🩸 हीमोग्लोबिन: ",
+    "bloodPressure": "💓 ब्लड प्रेशर: ",
+    "bloodSugar": "🩺 ब्लड शुगर: ",
+    "tier": "स्तर: ",
+    "action": " | कार्रवाई: ",
+    "none": "कोई नहीं",
+    "viewAllVisits": "सभी यात्राएं देखें",
+    "breathScanBtn": "🫁 सांस जांच",
+    "visionScanBtn": "📷 नवजात जांच"
   },
   "startVisit": {
     "progress": "सवाल {{current}} / {{total}}",

@@ -53,9 +53,9 @@ const AddMotherScreen: React.FC = () => {
   const getHbHint = () => {
     const val = parseFloat(hemoglobin);
     if (isNaN(val) || val <= 0) return null;
-    if (val < 7) return <Text style={[styles.hintText, { color: '#D32F2F' }]}>⚠️ Severe anemia - refer immediately</Text>;
-    if (val >= 7 && val < 11) return <Text style={[styles.hintText, { color: '#F57C00' }]}>Mild anemia - monitor closely</Text>;
-    return <Text style={[styles.hintText, { color: '#388E3C' }]}>Normal</Text>;
+    if (val < 7) return <Text style={[styles.hintText, { color: '#D32F2F' }]}>{t('addMother.anemiaSevere')}</Text>;
+    if (val >= 7 && val < 11) return <Text style={[styles.hintText, { color: '#F57C00' }]}>{t('addMother.anemiaMild')}</Text>;
+    return <Text style={[styles.hintText, { color: '#388E3C' }]}>{t('addMother.anemiaNormal')}</Text>;
   };
 
   const validate = () => {
@@ -183,8 +183,7 @@ const AddMotherScreen: React.FC = () => {
           
           {/* Info Banner */}
           <View style={styles.banner}>
-            <Text style={styles.bannerText}>📱 All data saved on your phone. No internet needed.</Text>
-            <Text style={styles.bannerText}>फ़ोन पर सेव होगा। इंटरनेट की ज़रूरत नहीं।</Text>
+            <Text style={styles.bannerText}>{t('addMother.offlineBanner')}</Text>
           </View>
 
           {/* Section 1 */}

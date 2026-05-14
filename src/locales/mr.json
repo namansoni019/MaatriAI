@@ -158,7 +158,11 @@
     "errAge": "वय 10 ते 60 दरम्यान असावे",
     "errWeeks": "गरोदरपण 1 ते 42 आठवड्यांच्या दरम्यान असावे",
     "saveBtn": "जतन करा",
-    "successMsg": "यशस्वीरित्या जोडले!"
+    "successMsg": "यशस्वीरित्या जोडले!",
+    "offlineBanner": "📱 सर्व डेटा फोनवर सेव्ह होईल. इंटरनेटची गरज नाही.",
+    "anemiaSevere": "⚠️ गंभीर अशक्तपणा - त्वरित रेफर करा",
+    "anemiaMild": "सौम्य अशक्तपणा - लक्ष ठेवा",
+    "anemiaNormal": "सामान्य"
   },
   "motherProfile": {
     "title": "मातेची प्रोफाइल",
@@ -171,11 +175,23 @@
     "parity": "मुलांची संख्या:",
     "latestVitals": "ताजी आरोग्य माहिती",
     "weight": "वजन:",
-    "bmi": "BMI:",
+    "bmi": "⚖️ BMI: ",
     "recentVisits": "मागील भेटी",
     "newborns": "नवजात बालके",
     "addNewbornBtn": "+ बाळ जोडा",
-    "startVisitBtn": "भेट सुरू करा"
+    "startVisitBtn": "भेट सुरू करा",
+    "riskScore": "धोका स्कोर: ",
+    "weeksPregnant": "गर्भधारणेचे आठवडे: ",
+    "abhaId": "ABHA ID",
+    "hemoglobin": "🩸 हिमोग्लोबिन: ",
+    "bloodPressure": "💓 रक्तदाब: ",
+    "bloodSugar": "🩺 रक्तातील साखर: ",
+    "tier": "स्तर: ",
+    "action": " | कृती: ",
+    "none": "काहीही नाही",
+    "viewAllVisits": "सर्व भेटी पहा",
+    "breathScanBtn": "🫁 श्वास तपासणी",
+    "visionScanBtn": "📷 नवजात तपासणी"
   },
   "startVisit": {
     "progress": "प्रश्न {{current}} / {{total}}",

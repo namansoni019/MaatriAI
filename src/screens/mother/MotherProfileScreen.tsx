@@ -75,8 +75,8 @@ const MotherProfileScreen: React.FC = () => {
       <View style={[styles.topCard, { backgroundColor: topBg }]}>
         <Text style={styles.motherName}>{mother.name}</Text>
         <Text style={styles.riskLabelText}>{riskLabel}</Text>
-        <Text style={styles.riskScoreText}>Risk Score: {mother.riskScore}/100</Text>
-        <Text style={styles.weeksPregText}>Weeks pregnant: {mother.weeksPregnant}</Text>
+        <Text style={styles.riskScoreText}>{t('motherProfile.riskScore')}{mother.riskScore}/100</Text>
+        <Text style={styles.weeksPregText}>{t('motherProfile.weeksPregnant')}{mother.weeksPregnant}</Text>
       </View>
 
       <ScrollView style={styles.scrollContent} contentContainerStyle={{ paddingBottom: 100 }}>
@@ -86,26 +86,26 @@ const MotherProfileScreen: React.FC = () => {
             {renderInfoItem(t('motherProfile.age'), mother.age)}
             {renderInfoItem(t('addMother.village'), mother.village)}
             {renderInfoItem(t('motherProfile.phone'), mother.phone)}
-            {renderInfoItem('ABHA ID', mother.abhaId)}
+            {renderInfoItem(t('motherProfile.abhaId'), mother.abhaId)}
           </View>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('motherProfile.latestVitals')}</Text>
           <View style={styles.healthRow}>
-            <Text style={styles.healthText}>🩸 Hemoglobin: {mother.hemoglobin} g/dL</Text>
+            <Text style={styles.healthText}>{t('motherProfile.hemoglobin')}{mother.hemoglobin} g/dL</Text>
             {getIndicator(mother.hemoglobin >= 11)}
           </View>
           <View style={styles.healthRow}>
-            <Text style={styles.healthText}>💓 Blood Pressure: {mother.systolicBP}/{mother.diastolicBP}</Text>
+            <Text style={styles.healthText}>{t('motherProfile.bloodPressure')}{mother.systolicBP}/{mother.diastolicBP}</Text>
             {getIndicator(mother.systolicBP <= 140)}
           </View>
           <View style={styles.healthRow}>
-            <Text style={styles.healthText}>🩺 Blood Sugar: {mother.bloodSugar} mg/dL</Text>
+            <Text style={styles.healthText}>{t('motherProfile.bloodSugar')}{mother.bloodSugar} mg/dL</Text>
             {getIndicator(mother.bloodSugar <= 140)}
           </View>
           <View style={styles.healthRow}>
-            <Text style={styles.healthText}>⚖️ BMI: {mother.bmi > 0 ? mother.bmi.toFixed(1) : '-'}</Text>
+            <Text style={styles.healthText}>{t('motherProfile.bmi')}{mother.bmi > 0 ? mother.bmi.toFixed(1) : '-'}</Text>
             <Text style={{ fontSize: 16 }}>{isBmiNormal ? '🟢' : '🟡'}</Text>
           </View>
         </View>
@@ -118,13 +118,13 @@ const MotherProfileScreen: React.FC = () => {
             visits.slice(0, 3).map((v, i) => (
               <View key={i} style={styles.visitCard}>
                 <Text style={styles.visitDate}>{new Date(v.visitDate).toLocaleDateString()}</Text>
-                <Text style={styles.visitDetails}>Tier: {v.riskTierAtVisit} | Action: {v.actionTaken || 'None'}</Text>
+                <Text style={styles.visitDetails}>{t('motherProfile.tier')}{v.riskTierAtVisit}{t('motherProfile.action')}{v.actionTaken || t('motherProfile.none')}</Text>
               </View>
             ))
           )}
           {visits.length > 3 && (
             <TouchableOpacity style={styles.viewAllBtn}>
-              <Text style={styles.viewAllText}>View All Visits</Text>
+              <Text style={styles.viewAllText}>{t('motherProfile.viewAllVisits')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -143,14 +143,14 @@ const MotherProfileScreen: React.FC = () => {
           style={[styles.btn, styles.newbornBtn]}
           onPress={() => navigation.navigate('BreathScan', { newbornId: mother.id })}
         >
-          <Text style={styles.btnTextPink}>🫁 Breath</Text>
+          <Text style={styles.btnTextPink}>{t('motherProfile.breathScanBtn')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
           style={[styles.btn, styles.newbornBtn]}
           onPress={() => navigation.navigate('VisionScan', { newbornId: mother.id })}
         >
-          <Text style={styles.btnTextPink}>📷 Scan</Text>
+          <Text style={styles.btnTextPink}>{t('motherProfile.visionScanBtn')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

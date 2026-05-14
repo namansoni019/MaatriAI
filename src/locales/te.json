@@ -150,7 +150,11 @@
     "errAge": "Age must be between 10 and 60",
     "errWeeks": "Weeks pregnant must be between 1 and 42",
     "saveBtn": "Save Profile",
-    "successMsg": "Added successfully!"
+    "successMsg": "Added successfully!",
+    "offlineBanner": "📱 All data saved on your phone. No internet needed.",
+    "anemiaSevere": "⚠️ Severe anemia - refer immediately",
+    "anemiaMild": "Mild anemia - monitor closely",
+    "anemiaNormal": "Normal"
   },
   "motherProfile": {
     "title": "Mother Profile",
@@ -163,11 +167,23 @@
     "parity": "Parity:",
     "latestVitals": "Latest Vitals",
     "weight": "Weight:",
-    "bmi": "BMI:",
+    "bmi": "⚖️ BMI: ",
     "recentVisits": "Recent Visits",
     "newborns": "Newborns",
     "addNewbornBtn": "+ Add Newborn",
-    "startVisitBtn": "Start Visit"
+    "startVisitBtn": "Start Visit",
+    "riskScore": "Risk Score: ",
+    "weeksPregnant": "Weeks pregnant: ",
+    "abhaId": "ABHA ID",
+    "hemoglobin": "🩸 Hemoglobin: ",
+    "bloodPressure": "💓 Blood Pressure: ",
+    "bloodSugar": "🩺 Blood Sugar: ",
+    "tier": "Tier: ",
+    "action": " | Action: ",
+    "none": "None",
+    "viewAllVisits": "View All Visits",
+    "breathScanBtn": "🫁 Breath",
+    "visionScanBtn": "📷 Scan"
   },
   "startVisit": {
     "progress": "Question {{current}} of {{total}}",
