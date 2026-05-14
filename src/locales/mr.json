@@ -2,7 +2,21 @@
   "app": {
     "name": "Maatri.AI",
     "tagline": "माता आणि बाळाची काळजी",
-    "taglineEn": "Maternal & Neonatal Care AI"
+    "taglineEn": "Maternal & Neonatal Care AI",
+    "myMothers": "माझ्या माता",
+    "addMother": "माता जोडा",
+    "homeVisit": "घरची भेट",
+    "riskScore": "धोका स्कोर",
+    "alert": "चेतावणी",
+    "visitSummary": "भेटीचा सारांश",
+    "newborn": "नवजात",
+    "newbornScan": "नवजात तपासणी",
+    "breathCheck": "श्वास तपासणी",
+    "mentalHealth": "मानसिक आरोग्य",
+    "tabHome": "होम",
+    "tabMothers": "माता",
+    "tabSync": "सिंक",
+    "tabProfile": "प्रोफाइल"
   },
   "common": {
     "save": "जतन करा",
@@ -53,7 +67,34 @@
     "lastVisit": "शेवटची भेट:",
     "neverVisited": "कधीही नाही",
     "daysAgo": "दिवसांपूर्वी",
-    "noVisit": "भेट झाली नाही"
+    "noVisit": "भेट झाली नाही",
+    "activeDuty": "Active Duty",
+    "urgentTitle": "Urgent Attention Required",
+    "urgentSub": "{{count}} mothers need immediate visit",
+    "viewBtn": "View",
+    "seeAll": "See All",
+    "highRiskBadge": "HIGH RISK",
+    "monitorBadge": "MONITOR",
+    "routineBadge": "ROUTINE",
+    "ago": "ago",
+    "quickActions": "Quick Actions",
+    "actionAddMother": "Add Mother",
+    "actionAddMotherSub": "Register new",
+    "actionBreath": "Breath Scan",
+    "actionBreathSub": "Newborn check",
+    "actionVision": "Vision Scan",
+    "actionVisionSub": "Jaundice detect",
+    "actionSync": "Sync Data",
+    "actionSyncSub": "{{count}} pending",
+    "recentActivity": "Recent Activity",
+    "noActivityTitle": "No activity yet",
+    "noActivitySub": "Start your first visit",
+    "motivationTitle": "You are making a difference!",
+    "motivationSub": "{{monitored}} mothers monitored • {{lives}} lives protected",
+    "visitCompleted": "Visit completed",
+    "highRiskFound": "High risk found",
+    "motherAdded": "Mother added",
+    "syncDone": "Sync completed"
   },
   "visit": {
     "highRiskReason": "⚠️ जास्त धोका, तपासणी आवश्यक आहे",
@@ -126,7 +167,17 @@
     "startVisitBtn": "भेट सुरू करा →",
     "noMothersTitle": "अद्याप कोणतीही माता जोडलेली नाही",
     "noMothersSub": "पहिली माता जोडण्यासाठी खाली क्लिक करा",
-    "addFirstBtn": "पहिली माता जोडा"
+    "addFirstBtn": "पहिली माता जोडा",
+    "filterAll": "All",
+    "filterHighRisk": "High Risk",
+    "filterMonitor": "Monitor",
+    "filterRoutine": "Routine",
+    "filterDueVisit": "Due Visit",
+    "fabAdd": "Add Mother",
+    "neverVisited": "Never",
+    "daysAgo": "ago",
+    "syncNeeded": "Sync needed",
+    "synced": "Synced"
   },
   "addMother": {
     "title": "माता जोडा",
@@ -230,7 +281,8 @@
     "syncing": "सिंक होत आहे...",
     "noPending": "सिंक करण्यासाठी कोणतेही नवीन रेकॉर्ड नाही.",
     "successMsg": "डेटा यशस्वीरित्या सिंक झाला!",
-    "failMsg": "सिंक अयशस्वी. कृपया पुन्हा प्रयत्न करा."
+    "failMsg": "सिंक अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
+    "unsyncedNewborns": "सिंक बाकी नवजात:"
   },
   "visionScan": {
     "title": "नवजात तपासणी",

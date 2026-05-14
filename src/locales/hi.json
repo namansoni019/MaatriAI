@@ -2,7 +2,21 @@
   "app": {
     "name": "Maatri.AI",
     "tagline": "माँ और शिशु की देखभाल",
-    "taglineEn": "Maternal & Neonatal Care AI"
+    "taglineEn": "Maternal & Neonatal Care AI",
+    "myMothers": "मेरी माताएं",
+    "addMother": "माँ जोड़ें",
+    "homeVisit": "घर की यात्रा",
+    "riskScore": "जोखिम अंक",
+    "alert": "चेतावनी",
+    "visitSummary": "यात्रा सारांश",
+    "newborn": "नवजात",
+    "newbornScan": "जांच",
+    "breathCheck": "सांस जांच",
+    "mentalHealth": "मानसिक स्वास्थ्य",
+    "tabHome": "होम",
+    "tabMothers": "माताएं",
+    "tabSync": "सिंक",
+    "tabProfile": "प्रोफ़ाइल"
   },
   "common": {
     "save": "सहेजें",
@@ -53,7 +67,34 @@
     "lastVisit": "पिछली यात्रा:",
     "neverVisited": "कभी नहीं",
     "daysAgo": "दिन पहले",
-    "noVisit": "यात्रा नहीं हुई"
+    "noVisit": "यात्रा नहीं हुई",
+    "activeDuty": "ड्यूटी पर",
+    "urgentTitle": "तत्काल ध्यान दें",
+    "urgentSub": "{{count}} माताओं को तुरंत जांच की जरूरत है",
+    "viewBtn": "देखें",
+    "seeAll": "सभी देखें",
+    "highRiskBadge": "गंभीर",
+    "monitorBadge": "निगरानी",
+    "routineBadge": "सामान्य",
+    "ago": "पहले",
+    "quickActions": "त्वरित कार्य",
+    "actionAddMother": "माँ जोड़ें",
+    "actionAddMotherSub": "नई रजिस्टर करें",
+    "actionBreath": "सांस जांच",
+    "actionBreathSub": "नवजात जांच",
+    "actionVision": "नवजात जांच",
+    "actionVisionSub": "पीलिया की जांच",
+    "actionSync": "सिंक करें",
+    "actionSyncSub": "{{count}} बाकी",
+    "recentActivity": "हाल की गतिविधि",
+    "noActivityTitle": "कोई गतिविधि नहीं",
+    "noActivitySub": "अपनी पहली यात्रा शुरू करें",
+    "motivationTitle": "आप एक बदलाव ला रही हैं!",
+    "motivationSub": "{{monitored}} माताओं की जांच • {{lives}} जीवन सुरक्षित",
+    "visitCompleted": "यात्रा पूरी हुई",
+    "highRiskFound": "गंभीर जोखिम मिला",
+    "motherAdded": "माँ जोड़ी गई",
+    "syncDone": "सिंक पूरा हुआ"
   },
   "visit": {
     "highRiskReason": "⚠️ अधिक जोखिम, जांच ज़रूरी है",
@@ -126,7 +167,17 @@
     "startVisitBtn": "यात्रा शुरू करें →",
     "noMothersTitle": "अभी तक कोई माँ नहीं जुड़ी है",
     "noMothersSub": "पहली माँ जोड़ने के लिए नीचे क्लिक करें",
-    "addFirstBtn": "पहली माँ जोड़ें"
+    "addFirstBtn": "पहली माँ जोड़ें",
+    "filterAll": "सभी",
+    "filterHighRisk": "गंभीर",
+    "filterMonitor": "निगरानी",
+    "filterRoutine": "सामान्य",
+    "filterDueVisit": "जांच बाकी",
+    "fabAdd": "माँ जोड़ें",
+    "neverVisited": "कभी नहीं",
+    "daysAgo": "पहले",
+    "syncNeeded": "सिंक बाकी",
+    "synced": "सिंक है"
   },
   "addMother": {
     "title": "माँ जोड़ें",
@@ -230,7 +281,8 @@
     "syncing": "सिंक हो रहा है...",
     "noPending": "सिंक करने के लिए कोई नया रिकॉर्ड नहीं है।",
     "successMsg": "डेटा सफलतापूर्वक सिंक हो गया!",
-    "failMsg": "सिंक विफल रहा। कृपया पुनः प्रयास करें।"
+    "failMsg": "सिंक विफल रहा। कृपया पुनः प्रयास करें।",
+    "unsyncedNewborns": "सिंक बाकी नवजात:"
   },
   "visionScan": {
     "title": "नवजात जांच",

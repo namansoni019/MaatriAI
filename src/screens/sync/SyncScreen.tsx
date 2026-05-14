@@ -109,7 +109,7 @@ const SyncScreen: React.FC = () => {
           </View>
 
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>👶 Newborns / नवजात</Text>
+            <Text style={styles.rowLabel}>👶 {t('syncScreen.unsyncedNewborns')}</Text>
             <View style={[styles.badge, unsyncedNewborns === 0 && styles.badgeZero]}>
               <Text style={[styles.badgeText, unsyncedNewborns === 0 && styles.badgeTextZero]}>{unsyncedNewborns}</Text>
             </View>
