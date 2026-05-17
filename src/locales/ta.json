@@ -274,7 +274,10 @@
     "noPending": "No pending records to sync.",
     "successMsg": "Data synced successfully!",
     "failMsg": "Failed to sync. Please try again.",
-    "unsyncedNewborns": "Unsynced Newborns:"
+    "unsyncedNewborns": "Unsynced Newborns:",
+    "pendingItems": "Pending Items",
+    "syncAdvice": "Please connect to the internet and sync your data to keep it safe.",
+    "unsyncedRecords": "Unsynced Records"
   },
   "visionScan": {
     "title": "Newborn Scan",

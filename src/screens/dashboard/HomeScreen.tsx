@@ -11,7 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { db } from '../../database/db';
 import { getAllMothers } from '../../database/motherRepository';
-import { Mother } from '../../types';
+import { Mother, Baby } from '../../types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -109,6 +109,9 @@ const HomeScreen: React.FC = () => {
   const [breathCount, setBreathCount] = useState(0);
   const [visionCount, setVisionCount] = useState(0);
   const [unsynced, setUnsynced] = useState(0);
+  const [deliveredCount, setDeliveredCount] = useState(0);
+  const [babiesCount, setBabiesCount] = useState(0);
+  const [recentDeliveries, setRecentDeliveries] = useState<{mother: Mother, baby: Baby | null}[]>([]);
   
   const [priorityMothers, setPriorityMothers] = useState<ScoredMother[]>([]);
   const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
@@ -152,13 +155,34 @@ const HomeScreen: React.FC = () => {
       const bc: any = await db.getFirstAsync("SELECT COUNT(*) as count FROM breath_scans WHERE asha_id = ?", [aid]);
       setBreathCount(bc?.count || 0);
 
-      const vc: any = await db.getFirstAsync("SELECT COUNT(*) as count FROM newborns WHERE asha_id = ?", [aid]);
+      const vc: any = await db.getFirstAsync("SELECT COUNT(*) as count FROM babies WHERE asha_id = ?", [aid]);
       setVisionCount(vc?.count || 0);
+
+      // Delivered mothers & babies
+      const dc = allMothers.filter(m => m.status === 'DELIVERED' || m.status === 'POSTPARTUM').length;
+      setDeliveredCount(dc);
+      const babyCount: any = await db.getFirstAsync("SELECT COUNT(*) as count FROM babies WHERE asha_id = ?", [aid]);
+      setBabiesCount(babyCount?.count || 0);
+
+      // Recent Deliveries (last 3 delivered mothers)
+      const delivered = allMothers
+        .filter(m => m.status === 'DELIVERED' || m.status === 'POSTPARTUM')
+        .sort((a, b) => (b.deliveryDate || '').localeCompare(a.deliveryDate || ''))
+        .slice(0, 3);
+      const deliveryItems: {mother: Mother, baby: Baby | null}[] = [];
+      for (const dm of delivered) {
+        const babyRow: any = await db.getFirstAsync('SELECT * FROM babies WHERE mother_id = ? ORDER BY created_at DESC LIMIT 1', [dm.id]);
+        deliveryItems.push({
+          mother: dm,
+          baby: babyRow ? { id: babyRow.id, motherId: babyRow.mother_id, ashaId: babyRow.asha_id, name: babyRow.name, gender: babyRow.gender, dateOfBirth: babyRow.date_of_birth, birthWeightKg: babyRow.birth_weight_kg, birthType: babyRow.birth_type, currentStatus: babyRow.current_status, isSynced: Boolean(babyRow.is_synced), createdAt: babyRow.created_at } : null
+        });
+      }
+      setRecentDeliveries(deliveryItems);
 
       // Unsynced
       const um: any = await db.getFirstAsync('SELECT COUNT(*) as c FROM mothers WHERE is_synced = 0');
       const uv: any = await db.getFirstAsync('SELECT COUNT(*) as c FROM visits WHERE is_synced = 0');
-      const un: any = await db.getFirstAsync('SELECT COUNT(*) as c FROM newborns WHERE is_synced = 0');
+      const un: any = await db.getFirstAsync('SELECT COUNT(*) as c FROM babies WHERE is_synced = 0');
       const ub: any = await db.getFirstAsync('SELECT COUNT(*) as c FROM breath_scans WHERE is_synced = 0');
       setUnsynced((um?.c || 0) + (uv?.c || 0) + (un?.c || 0) + (ub?.c || 0));
 
@@ -265,11 +289,11 @@ const HomeScreen: React.FC = () => {
                 <Text style={styles.greeting}>{getGreeting()}</Text>
                 <Text style={styles.userName}>{userName}</Text>
               </View>
-              <View style={styles.avatarBorder}>
+              <TouchableOpacity style={styles.avatarBorder} onPress={() => navigation.navigate('Profile')}>
                 <LinearGradient colors={['#E91E8C', '#C2185B']} style={styles.avatar}>
                   <Text style={styles.avatarLetter}>{userName ? userName.charAt(0).toUpperCase() : 'A'}</Text>
                 </LinearGradient>
-              </View>
+              </TouchableOpacity>
             </View>
             
             <View style={styles.headerBottom}>
@@ -287,7 +311,7 @@ const HomeScreen: React.FC = () => {
 
         {/* 2. FLOATING STATS ROW */}
         <Animated.View style={[styles.statsRow, getFadeSlide(animStats)]}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}>
             <View style={[styles.statCard, { marginRight: 12 }]}>
               <View style={[styles.iconCircle, { backgroundColor: '#FCE4EC' }]}>
                 <Ionicons name="people" size={20} color="#C2185B" />
@@ -326,12 +350,20 @@ const HomeScreen: React.FC = () => {
               <Text style={styles.statLabel}>{t('home.actionBreath')}</Text>
             </View>
 
-            <View style={styles.statCard}>
+            <View style={[styles.statCard, { marginRight: 12 }]}>
               <View style={[styles.iconCircle, { backgroundColor: '#F3E5F5' }]}>
                 <Ionicons name="scan" size={20} color="#7B1FA2" />
               </View>
               <AnimatedNumber value={visionCount} style={[styles.statNumber, { color: '#7B1FA2' }]} />
               <Text style={styles.statLabel}>{t('home.actionVision')}</Text>
+            </View>
+
+            <View style={styles.statCard}>
+              <View style={[styles.iconCircle, { backgroundColor: '#E0F7FA' }]}>
+                <Ionicons name="happy" size={20} color="#00838F" />
+              </View>
+              <AnimatedNumber value={babiesCount} style={[styles.statNumber, { color: '#00838F' }]} />
+              <Text style={styles.statLabel}>Babies</Text>
             </View>
           </ScrollView>
         </Animated.View>
@@ -397,7 +429,7 @@ const HomeScreen: React.FC = () => {
                           <Ionicons name="location" size={12} color="#6B7280" />
                           <Text style={styles.pCardMeta}>{m.village || '—'}</Text>
                           <Ionicons name="body" size={12} color="#6B7280" style={{ marginLeft: 8 }} />
-                          <Text style={styles.pCardMeta}>{m.weeksPregnant} {t('motherProfile.weeksPregnant').replace(':', '')}</Text>
+                          <Text style={styles.pCardMeta}>{m.status === 'DELIVERED' || m.status === 'POSTPARTUM' ? 'Delivered' : `${m.weeksPregnant}w`}</Text>
                         </View>
                       </View>
                     </View>
@@ -420,7 +452,7 @@ const HomeScreen: React.FC = () => {
                     </View>
                     <TouchableOpacity onPress={() => navigation.navigate('Mothers', { screen: 'StartVisit', params: { motherId: m.id } })}>
                       <LinearGradient colors={['#C2185B', '#E91E8C']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.startVisitBtn}>
-                        <Text style={styles.startVisitText}>{t('home.startVisit')}</Text>
+                        <Text style={styles.startVisitText}>Start Visit</Text>
                         <Ionicons name="arrow-forward" size={12} color="#fff" />
                       </LinearGradient>
                     </TouchableOpacity>
@@ -430,6 +462,48 @@ const HomeScreen: React.FC = () => {
             })
           )}
         </Animated.View>
+
+        {/* 4b. RECENT DELIVERIES */}
+        {recentDeliveries.length > 0 && (
+          <Animated.View style={[getFadeSlide(animVisits), { marginTop: 8 }]}>
+            <View style={styles.sectionHeader}>
+              <View>
+                <Text style={styles.sectionTitle}>Recent Deliveries</Text>
+                <View style={[styles.titleUnderline, { backgroundColor: '#0097A7' }]} />
+              </View>
+            </View>
+            {recentDeliveries.map((item) => (
+              <TouchableOpacity
+                key={item.mother.id}
+                style={[styles.priorityCard, { borderLeftWidth: 4, borderLeftColor: '#0097A7' }]}
+                onPress={() => {
+                  if (item.baby) navigation.navigate('Mothers', { screen: 'BabyProfile', params: { babyId: item.baby.id } });
+                  else navigation.navigate('Mothers', { screen: 'MotherProfile', params: { motherId: item.mother.id, motherName: item.mother.name } });
+                }}
+              >
+                <View style={styles.pCardTop}>
+                  <View style={styles.pCardTopLeft}>
+                    <View style={[styles.priorityCircle, { backgroundColor: '#0097A7' }]}>
+                      <Ionicons name="happy" size={16} color="#fff" />
+                    </View>
+                    <View style={{ marginLeft: 12 }}>
+                      <Text style={styles.pCardName} numberOfLines={1}>{item.mother.name}</Text>
+                      <Text style={styles.pCardMeta}>
+                        {item.mother.deliveryType} • {item.mother.deliveryDate?.split('T')[0]}
+                      </Text>
+                    </View>
+                  </View>
+                  {item.baby && (
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#00838F' }}>{item.baby.name}</Text>
+                      <Text style={{ fontSize: 11, color: '#6B7280' }}>{item.baby.birthWeightKg} kg</Text>
+                    </View>
+                  )}
+                </View>
+              </TouchableOpacity>
+            ))}
+          </Animated.View>
+        )}
 
         {/* 5. QUICK ACTIONS GRID */}
         <Animated.View style={getFadeSlide(animActions)}>
@@ -529,7 +603,7 @@ const styles = StyleSheet.create({
   pillText: { color: '#fff', fontSize: 12, fontWeight: '600' },
 
   // Stats
-  statsRow: { marginTop: -28, zIndex: 10 },
+  statsRow: { marginTop: -28, marginBottom: 24, zIndex: 10 },
   statCard: { width: 110, backgroundColor: '#fff', borderRadius: 16, padding: 14, elevation: 8, shadowColor: '#C2185B', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15, shadowRadius: 12, alignItems: 'center' },
   iconCircle: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
   statNumber: { fontSize: 28, fontWeight: 'bold', color: '#1A1A2E' },

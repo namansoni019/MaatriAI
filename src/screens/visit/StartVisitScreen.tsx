@@ -9,7 +9,7 @@ import { MotherStackParamList } from '../../../App';
 import { getMotherById, updateMotherRisk } from '../../database/motherRepository';
 import { addVisit } from '../../database/visitRepository';
 import { evaluateVisit } from '../../ai/dangerSignRules';
-import { speak, stopListening } from '../../services/voiceService';
+import { speak, stopListening, stopSpeaking } from '../../services/voiceService';
 import VoiceButton from '../../components/VoiceButton';
 import { Mother } from '../../types';
 import { useTranslation } from 'react-i18next';
@@ -111,18 +111,20 @@ const StartVisitScreen: React.FC = () => {
       setCurrentInputValue(answers[q.field] ? String(answers[q.field]) : '');
       
       // Auto-speak the question when it loads
-      speak(q.questionHindi);
+      speak(q.questionText);
     }
   }, [currentIndex, isFocused, mother, saving]);
 
   // Clean up speech on unmount
   useEffect(() => {
     return () => {
+      stopSpeaking();
       stopListening();
     };
   }, []);
 
   const goToNext = async (currentAnswers: Record<string, any>) => {
+    stopSpeaking(); // Stop voice when navigating away
     let nextIndex = currentIndex + 1;
     
     // Find next valid question based on pregnancy weeks
@@ -157,6 +159,7 @@ const StartVisitScreen: React.FC = () => {
   };
 
   const handleBack = () => {
+    stopSpeaking(); // Stop voice when navigating away
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     } else {
@@ -189,7 +192,6 @@ const StartVisitScreen: React.FC = () => {
       const now = new Date().toISOString();
 
       await addVisit({
-        id: visitId,
         motherId: mother!.id,
         ashaId: session.id,
         visitDate: now,
@@ -198,7 +200,7 @@ const StartVisitScreen: React.FC = () => {
         actionTaken: result.recommendedAction,
         generalComplaint: finalAnswers.generalComplaint || '',
         ironFolicCompliance: finalAnswers.ironFolicCompliance || false,
-        dangerSignsFound: JSON.stringify(result.detectedSigns.map(s => s.name)), // Keep string array for compatibility
+        dangerSignsFound: result.detectedSigns.map(s => s.name),
         isSynced: false,
       });
 
@@ -356,13 +358,13 @@ const styles = StyleSheet.create({
     padding: 24,
     elevation: 4,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 6,
-    minHeight: 350
+    height: 400
   },
   qNumber: { color: '#C2185B', fontWeight: 'bold', fontSize: 14, marginBottom: 8, textAlign: 'center' },
   qHindi: { fontSize: 22, fontWeight: 'bold', color: '#212121', textAlign: 'center', lineHeight: 32 },
   qEnglish: { fontSize: 14, color: '#757575', textAlign: 'center', marginTop: 8 },
 
-  inputArea: { marginTop: 40, flex: 1, justifyContent: 'center' },
+  inputArea: { marginTop: 16, flex: 1, justifyContent: 'center' },
   
   yesNoContainer: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
   ynBtn: { flex: 1, borderRadius: 12, padding: 18, alignItems: 'center', elevation: 2 },

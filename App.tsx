@@ -22,6 +22,9 @@ import ProfileScreen from './src/screens/auth/ProfileScreen';
 import MotherListScreen from './src/screens/mother/MotherListScreen';
 import MotherProfileScreen from './src/screens/mother/MotherProfileScreen';
 import AddMotherScreen from './src/screens/mother/AddMotherScreen';
+import RecordDeliveryScreen from './src/screens/mother/RecordDeliveryScreen';
+import BabyProfileScreen from './src/screens/baby/BabyProfileScreen';
+import BabyVisitScreen from './src/screens/baby/BabyVisitScreen';
 import StartVisitScreen from './src/screens/visit/StartVisitScreen';
 import RiskScoreScreen from './src/screens/visit/RiskScoreScreen';
 import DangerSignScreen from './src/screens/visit/DangerSignScreen';
@@ -30,6 +33,9 @@ import NewbornProfileScreen from './src/screens/newborn/NewbornProfileScreen';
 import VisionScanScreen from './src/screens/newborn/VisionScanScreen';
 import BreathScanScreen from './src/screens/newborn/BreathScanScreen';
 import EPDSScreen from './src/screens/mentalhealth/EPDSScreen';
+
+// Baby Stack Screens
+import BabyListScreen from './src/screens/baby/BabyListScreen';
 
 // Sync Screen
 import SyncScreen from './src/screens/sync/SyncScreen';
@@ -44,6 +50,9 @@ export type MotherStackParamList = {
   MotherList: undefined;
   MotherProfile: { motherId: string; motherName: string };
   AddMother: undefined;
+  RecordDelivery: { motherId: string; motherName: string };
+  BabyProfile: { babyId: string };
+  BabyVisit: { babyId: string; visitDay: number };
   StartVisit: { motherId: string };
   RiskScore: { visitId: string };
   DangerSign: { visitId: string };
@@ -54,14 +63,25 @@ export type MotherStackParamList = {
   EPDS: { motherId: string };
 };
 
+export type BabyStackParamList = {
+  BabyList: undefined;
+  BabyProfile: { babyId: string };
+  BabyVisit: { babyId: string; visitDay: number };
+  VisionScan: { newbornId: string };
+  BreathScan: { newbornId: string };
+};
+
 export type MainTabParamList = {
   Home: undefined;
-  Mothers: undefined; 
+  Mothers: undefined;
+  Babies: undefined;
   Sync: undefined;
+  Profile: undefined;
 };
 
 const AuthStack = createStackNavigator<AuthStackParamList>();
 const MotherStack = createStackNavigator<MotherStackParamList>();
+const BabyStack = createStackNavigator<BabyStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 const themeColors = {
@@ -119,6 +139,21 @@ const MotherNavigator = () => {
         })} 
       />
       <MotherStack.Screen 
+        name="RecordDelivery" 
+        component={RecordDeliveryScreen} 
+        options={{ headerShown: false }} 
+      />
+      <MotherStack.Screen 
+        name="BabyProfile" 
+        component={BabyProfileScreen} 
+        options={{ headerShown: false }} 
+      />
+      <MotherStack.Screen 
+        name="BabyVisit" 
+        component={BabyVisitScreen} 
+        options={{ headerShown: false }} 
+      />
+      <MotherStack.Screen 
         name="StartVisit" 
         component={StartVisitScreen} 
         options={{ title: t('app.homeVisit') }} 
@@ -161,6 +196,40 @@ const MotherNavigator = () => {
     </MotherStack.Navigator>
   );
 };
+
+const BabyNavigator = () => {
+  const { t } = useTranslation();
+  return (
+    <BabyStack.Navigator screenOptions={defaultHeaderOptions}>
+      <BabyStack.Screen 
+        name="BabyList" 
+        component={BabyListScreen} 
+        options={{ headerShown: false }} 
+      />
+      <BabyStack.Screen 
+        name="BabyProfile" 
+        component={BabyProfileScreen} 
+        options={{ headerShown: false }} 
+      />
+      <BabyStack.Screen 
+        name="BabyVisit" 
+        component={BabyVisitScreen} 
+        options={{ headerShown: false }} 
+      />
+      <BabyStack.Screen 
+        name="VisionScan" 
+        component={VisionScanScreen} 
+        options={{ title: t('app.newbornScan') }} 
+      />
+      <BabyStack.Screen 
+        name="BreathScan" 
+        component={BreathScanScreen} 
+        options={{ title: t('app.breathCheck') }} 
+      />
+    </BabyStack.Navigator>
+  );
+};
+
 const MainNavigator = () => {
   const { t } = useTranslation();
   return (
@@ -170,6 +239,7 @@ const MainNavigator = () => {
           let iconName: keyof typeof Ionicons.glyphMap = 'home';
           if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
           else if (route.name === 'Mothers') iconName = focused ? 'people' : 'people-outline';
+          else if (route.name === 'Babies') iconName = focused ? 'happy' : 'happy-outline';
           else if (route.name === 'Sync') iconName = focused ? 'cloud-upload' : 'cloud-upload-outline';
           else if (route.name === 'Profile') iconName = focused ? 'person-circle' : 'person-circle-outline';
 
@@ -179,6 +249,7 @@ const MainNavigator = () => {
           let labelStr = '';
           if (route.name === 'Home') labelStr = t('app.tabHome');
           else if (route.name === 'Mothers') labelStr = t('app.tabMothers');
+          else if (route.name === 'Babies') labelStr = 'Babies';
           else if (route.name === 'Sync') labelStr = t('app.tabSync');
           else if (route.name === 'Profile') labelStr = t('app.tabProfile');
 
@@ -204,7 +275,16 @@ const MainNavigator = () => {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Mothers" component={MotherNavigator} />
+      <Tab.Screen 
+        name="Mothers" 
+        component={MotherNavigator} 
+        options={{ unmountOnBlur: true }}
+      />
+      <Tab.Screen 
+        name="Babies" 
+        component={BabyNavigator} 
+        options={{ unmountOnBlur: true }}
+      />
       <Tab.Screen name="Sync" component={SyncScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>

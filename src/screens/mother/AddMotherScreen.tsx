@@ -134,6 +134,7 @@ const AddMotherScreen: React.FC = () => {
         lastVisitDate: '',
         nextVisitDate: '',
         isSynced: false,
+        status: 'PREGNANT',
       });
 
       setIsLoading(false);

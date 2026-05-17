@@ -7,8 +7,8 @@ import {
   getUnsyncedVisits, markVisitSynced 
 } from '../database/visitRepository';
 import { 
-  getUnsyncedNewborns, markNewbornSynced 
-} from '../database/newbornRepository';
+  getUnsyncedBabies, markBabySynced 
+} from '../database/babyRepository';
 import { 
   getUnsyncedBreathScans, markBreathScanSynced 
 } from '../database/breathScanRepository';
@@ -20,7 +20,7 @@ export interface SyncResult {
   success: boolean;
   mothersSynced: number;
   visitsSynced: number;
-  newbornsSynced: number;
+  babiesSynced: number;
   breathScansSynced: number;
   errors: string[];
   syncedAt: string;
@@ -31,7 +31,7 @@ export const syncService = {
   async isOnline(): Promise<boolean> {
     try {
       const state = await NetInfo.fetch();
-      return state.isConnected && state.isInternetReachable !== false;
+      return Boolean(state.isConnected) && state.isInternetReachable !== false;
     } catch (e) {
       return false;
     }
@@ -42,7 +42,7 @@ export const syncService = {
       success: false,
       mothersSynced: 0,
       visitsSynced: 0,
-      newbornsSynced: 0,
+      babiesSynced: 0,
       breathScansSynced: 0,
       errors: [],
       syncedAt: new Date().toISOString()
@@ -59,7 +59,7 @@ export const syncService = {
       const [mothers, visits, newborns, breathScans] = await Promise.all([
         getUnsyncedMothers(ashaId),
         getUnsyncedVisits(ashaId),
-        getUnsyncedNewborns(ashaId),
+        getUnsyncedBabies(ashaId),
         getUnsyncedBreathScans() // note: doesn't take ashaId in current implementation
       ]);
 
@@ -87,13 +87,13 @@ export const syncService = {
       await Promise.all([
         ...mothers.map(m => markMotherSynced(m.id)),
         ...visits.map(v => markVisitSynced(v.id)),
-        ...newborns.map(n => markNewbornSynced(n.id)),
+        ...newborns.map(n => markBabySynced(n.id)),
         ...breathScans.map(b => markBreathScanSynced(b.id))
       ]);
 
       result.mothersSynced = mothers.length;
       result.visitsSynced = visits.length;
-      result.newbornsSynced = newborns.length;
+      result.babiesSynced = newborns.length;
       result.breathScansSynced = breathScans.length;
       result.success = true;
 
@@ -120,7 +120,7 @@ export const syncService = {
       const [mothers, visits, newborns, breathScans] = await Promise.all([
         getUnsyncedMothers(ashaId),
         getUnsyncedVisits(ashaId),
-        getUnsyncedNewborns(ashaId),
+        getUnsyncedBabies(ashaId),
         getUnsyncedBreathScans()
       ]);
       return mothers.length + visits.length + newborns.length + breathScans.length;

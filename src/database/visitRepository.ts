@@ -29,9 +29,9 @@ export const addVisit = async (data: Omit<Visit, 'id' | 'createdAt'>): Promise<s
       action_taken, referral_made, referral_location, is_synced, created_at
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      id, data.motherId, data.ashaId, data.visitDate, data.visitType, data.findings,
+      id, data.motherId, data.ashaId, data.visitDate, data.visitType ?? 'ANC', data.findings ?? null,
       data.riskScoreAtVisit, data.riskTierAtVisit, JSON.stringify(data.dangerSignsFound),
-      data.actionTaken, data.referralMade ? 1 : 0, data.referralLocation,
+      data.actionTaken, data.referralMade ? 1 : 0, data.referralLocation ?? null,
       data.isSynced ? 1 : 0, now
     ]
   );
