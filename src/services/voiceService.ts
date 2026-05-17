@@ -15,6 +15,10 @@ export const speak = (text: string, language?: string): Promise<void> => {
   });
 };
 
+export const stopSpeaking = async (): Promise<void> => {
+  await Speech.stop();
+};
+
 export const startListening = (language?: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     try {
@@ -71,7 +75,7 @@ export const isAvailable = async (): Promise<boolean> => {
   try {
     if (!NativeModules.Voice) return false;
     const services = await Voice.getSpeechRecognitionServices();
-    return services && services.length > 0;
+    return Boolean(services && services.length > 0);
   } catch (e) {
     return false;
   }

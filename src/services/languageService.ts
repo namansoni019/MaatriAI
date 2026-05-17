@@ -51,7 +51,7 @@ export const getCurrentLanguage = () => i18n.language;
 export const speakTranslation = async (key: string) => {
   const text = i18n.t(key);
   try {
-    const { Speech } = await import('expo-speech');
+    const Speech = await import('expo-speech');
     Speech.speak(text, { language: getCurrentLanguage() + '-IN', rate: 0.85 });
   } catch (e) {
     console.error('Failed to speak translation', e);

@@ -29,7 +29,7 @@ const SyncScreen: React.FC = () => {
     try {
       const mResult: any = await db.getFirstAsync('SELECT COUNT(*) as count FROM mothers WHERE is_synced = 0');
       const vResult: any = await db.getFirstAsync('SELECT COUNT(*) as count FROM visits WHERE is_synced = 0');
-      const nResult: any = await db.getFirstAsync('SELECT COUNT(*) as count FROM newborns WHERE is_synced = 0');
+      const nResult: any = await db.getFirstAsync('SELECT COUNT(*) as count FROM babies WHERE is_synced = 0');
       
       setUnsyncedMothers(mResult?.count || 0);
       setUnsyncedVisits(vResult?.count || 0);
@@ -74,7 +74,7 @@ const SyncScreen: React.FC = () => {
       try {
         await db.runAsync('UPDATE mothers SET is_synced = 1 WHERE is_synced = 0');
         await db.runAsync('UPDATE visits SET is_synced = 1 WHERE is_synced = 0');
-        await db.runAsync('UPDATE newborns SET is_synced = 1 WHERE is_synced = 0');
+        await db.runAsync('UPDATE babies SET is_synced = 1 WHERE is_synced = 0');
         
         Alert.alert(t('syncScreen.successMsg'), '');
         checkUnsynced();

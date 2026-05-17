@@ -65,22 +65,59 @@ export const initDatabase = async (): Promise<void> => {
         created_at TEXT
       );
 
-      CREATE TABLE IF NOT EXISTS newborns (
+      DROP TABLE IF EXISTS newborns;
+
+      CREATE TABLE IF NOT EXISTS babies (
         id TEXT PRIMARY KEY,
         mother_id TEXT NOT NULL,
         asha_id TEXT NOT NULL,
-        date_of_birth TEXT,
+        name TEXT,
         gender TEXT,
-        birth_weight REAL DEFAULT 0,
-        estimated_weight REAL DEFAULT 0,
-        jaundice_risk TEXT DEFAULT 'LOW',
-        breathing_status TEXT DEFAULT 'NORMAL',
-        nutrition_status TEXT DEFAULT 'NORMAL',
-        breastfeeding_status INTEGER DEFAULT 0,
-        immunisations_due TEXT DEFAULT '[]',
+        date_of_birth TEXT NOT NULL,
+        birth_weight_kg REAL,
+        birth_type TEXT,
+        current_status TEXT DEFAULT 'ACTIVE',
         is_synced INTEGER DEFAULT 0,
         created_at TEXT
       );
+
+      CREATE TABLE IF NOT EXISTS baby_visits (
+        id TEXT PRIMARY KEY,
+        baby_id TEXT NOT NULL,
+        mother_id TEXT NOT NULL,
+        asha_id TEXT NOT NULL,
+        visit_day INTEGER,
+        visit_date TEXT,
+        weight_kg REAL,
+        weight_status TEXT,
+        jaundice_scan_done INTEGER DEFAULT 0,
+        jaundice_result TEXT,
+        breath_scan_done INTEGER DEFAULT 0,
+        breath_result TEXT,
+        feeding_status TEXT,
+        danger_signs TEXT DEFAULT '[]',
+        overall_assessment TEXT,
+        notes TEXT,
+        is_synced INTEGER DEFAULT 0,
+        created_at TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS referrals (
+        id TEXT PRIMARY KEY,
+        patient_type TEXT,
+        patient_id TEXT NOT NULL,
+        asha_id TEXT NOT NULL,
+        referral_date TEXT,
+        reason TEXT,
+        referred_to TEXT,
+        urgency TEXT,
+        outcome TEXT,
+        notes TEXT,
+        is_synced INTEGER DEFAULT 0,
+        created_at TEXT
+      );
+
+
       CREATE TABLE IF NOT EXISTS breath_scans (
         id TEXT PRIMARY KEY,
         mother_id TEXT NOT NULL,
@@ -96,6 +133,24 @@ export const initDatabase = async (): Promise<void> => {
         created_at TEXT
       );
     `);
+
+    // Safe Alter Table for mothers
+    const safeAddColumn = async (tableName: string, colName: string, colDef: string) => {
+      try {
+        await db.execAsync(`ALTER TABLE ${tableName} ADD COLUMN ${colName} ${colDef}`);
+      } catch (e: any) {
+        if (!e.message.includes('duplicate column name')) {
+          console.warn(`Column ${colName} may already exist or error:`, e.message);
+        }
+      }
+    };
+
+    await safeAddColumn('mothers', 'status', "TEXT DEFAULT 'PREGNANT'");
+    await safeAddColumn('mothers', 'delivery_date', "TEXT");
+    await safeAddColumn('mothers', 'delivery_type', "TEXT");
+    await safeAddColumn('mothers', 'delivery_complications', "TEXT");
+    await safeAddColumn('mothers', 'delivery_baby_weight', "REAL");
+
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error);

@@ -46,6 +46,7 @@ const RiskScoreScreen: React.FC = () => {
         
         const m = await getMotherById(motherId);
         setMother(m);
+        if (!m) return;
         
         // Calculate risk
         const riskInput = {

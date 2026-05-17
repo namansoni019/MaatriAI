@@ -28,6 +28,11 @@ const mapMotherRow = (row: any): Mother => ({
   isSynced: Boolean(row.is_synced),
   createdAt: row.created_at,
   updatedAt: row.updated_at,
+  status: row.status || 'PREGNANT',
+  deliveryDate: row.delivery_date,
+  deliveryType: row.delivery_type,
+  deliveryComplications: row.delivery_complications,
+  deliveryBabyWeight: row.delivery_baby_weight,
 });
 
 export const getAllMothers = async (ashaId: string): Promise<Mother[]> => {
@@ -84,7 +89,9 @@ export const updateMother = async (id: string, updates: Partial<Mother>): Promis
     weeksPregnant: 'weeks_pregnant', parity: 'parity', hemoglobin: 'hemoglobin', systolicBP: 'systolic_bp',
     diastolicBP: 'diastolic_bp', bloodSugar: 'blood_sugar', bmi: 'bmi', height: 'height', weight: 'weight',
     riskTier: 'risk_tier', riskScore: 'risk_score', phone: 'phone', abhaId: 'abha_id', 
-    lastVisitDate: 'last_visit_date', nextVisitDate: 'next_visit_date', isSynced: 'is_synced'
+    lastVisitDate: 'last_visit_date', nextVisitDate: 'next_visit_date', isSynced: 'is_synced',
+    status: 'status', deliveryDate: 'delivery_date', deliveryType: 'delivery_type', 
+    deliveryComplications: 'delivery_complications', deliveryBabyWeight: 'delivery_baby_weight'
   };
   
   Object.entries(updates).forEach(([key, value]) => {
