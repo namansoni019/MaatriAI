@@ -16,8 +16,6 @@ In India:
 5. **Smart Priority Queueing**: Automatically prioritizes the ASHA worker's daily visits based on risk scores and overdue dates.
 6. **Background Sync**: Seamlessly syncs all data to a secure FastAPI cloud backend the moment internet connectivity is restored.
 
-## 📱 Screenshots
-*(Screenshots coming soon)*
 
 ## 🛠️ Tech Stack
 - **Frontend App**: React Native (Expo), TypeScript
@@ -62,10 +60,8 @@ We are looking for:
 - 👩⚕️ **Clinical advisors** (maternal/neonatal health experts)
 - 🏛️ **Government health officials** (NHM/ASHA program directors)
 
-**Contact:** [YOUR EMAIL HERE]
+Contact: soninamanp7@gmail.com 
 
-*Organizations we hope to partner with:*
-Wadhwani AI | ARMMAN | Digital Green | UNICEF India
 
-## 📄 License
-This project is licensed under the MIT License.
+
+
